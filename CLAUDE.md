@@ -6,10 +6,10 @@ Está pensada para desplegarse en **Railway** con PostgreSQL.
 ## Mapa del proyecto
 
 ```
-server.js            Servidor Express: auth por contraseña + API REST de items
+server.js            Servidor Express: API REST de items (sin auth)
 db.js                Acceso a datos. Usa PostgreSQL si hay DATABASE_URL,
                      si no cae a un almacén en memoria (solo para dev).
-public/index.html    Estructura de la app (pantalla de login + lista)
+public/index.html    Estructura de la app (la lista)
 public/styles.css    Estilos (teal, responsivo, modo oscuro automático)
 public/app.js        Lógica del cliente: fetch a la API, render, polling
 railway.json         Config de despliegue en Railway (start + healthcheck)
@@ -18,31 +18,26 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 
 ## Cómo funciona
 
-- **Auth:** una sola contraseña compartida (`APP_PASSWORD`). Al entrar se
-  guarda una cookie firmada con HMAC (`SESSION_SECRET`). No hay usuarios
-  individuales; ambos usan la misma contraseña. El nombre de cada persona se
-  guarda en `localStorage` del navegador y se envía al agregar items.
+- **Sin contraseña:** cualquiera con el link entra directo (así lo pidió el
+  dueño para que sea más simple). El nombre de cada persona se guarda en
+  `localStorage` del navegador y se envía al agregar items.
 - **Datos:** tabla `items` (id, name, quantity, done, added_by, created_at).
 - **Sincronización:** el cliente hace polling cada 3 s (`startPolling` en
   `app.js`), por eso los cambios de uno aparecen en el celular del otro.
 
-## API REST (todas requieren estar autenticado, excepto login)
+## API REST
 
 | Método | Ruta                        | Descripción                    |
 | ------ | --------------------------- | ------------------------------ |
-| POST   | `/api/login`                | `{ password }` → cookie        |
-| POST   | `/api/logout`               | cierra sesión                  |
-| GET    | `/api/session`              | `{ authed: bool }`             |
 | GET    | `/api/items`                | lista de items                 |
 | POST   | `/api/items`                | `{ name, quantity, addedBy }`  |
 | PATCH  | `/api/items/:id`            | `{ name?, quantity?, done? }`  |
 | DELETE | `/api/items/:id`            | borra un item                  |
 | POST   | `/api/items/clear-completed`| borra todos los comprados      |
+| GET    | `/health`                   | healthcheck para Railway       |
 
 ## Variables de entorno
 
-- `APP_PASSWORD` — contraseña compartida (default inseguro: `miven`).
-- `SESSION_SECRET` — secreto para firmar la sesión.
 - `DATABASE_URL` — PostgreSQL. Sin ella se usa memoria (no persiste).
 - `DATABASE_SSL` — `true` solo si te conectas a Postgres por SSL/proxy público.
 - `PORT` — lo asigna Railway automáticamente.
@@ -62,3 +57,5 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 - Múltiples listas (despensa, farmacia, etc.).
 - Historial de compras / productos frecuentes.
 - Notificaciones push.
+- Si más adelante quieren privacidad, se puede volver a agregar una
+  contraseña compartida (había una versión con login por cookie HMAC).

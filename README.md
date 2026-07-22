@@ -9,7 +9,7 @@ real entre ambos dispositivos.
 - ✅ Agregar, marcar como comprado y borrar productos
 - 🔢 Cantidad opcional por producto
 - 👥 Muestra quién agregó cada cosa
-- 🔐 Acceso protegido con una contraseña compartida
+- 🚪 Sin contraseña: se entra directo con el link (más simple)
 - 🔄 Se sincroniza automáticamente entre celulares (actualiza cada 3 segundos)
 - 🌙 Modo claro y oscuro automático
 - 🚂 Lista para desplegar en Railway con PostgreSQL
@@ -37,19 +37,17 @@ real entre ambos dispositivos.
 
    | Variable          | Valor                                            |
    | ----------------- | ------------------------------------------------ |
-   | `APP_PASSWORD`    | La contraseña que compartirás con tu esposa      |
-   | `SESSION_SECRET`  | Una cadena larga y aleatoria                      |
    | `DATABASE_URL`    | Referencia: `${{ Postgres.DATABASE_URL }}`       |
 
-   > Para `DATABASE_URL` usa el botón **Add Reference** y elige la variable
-   > `DATABASE_URL` del servicio Postgres. Así se conecta por la red privada
-   > de Railway (sin SSL, más rápido y seguro).
+   > Usa el botón **Add Reference** y elige la variable `DATABASE_URL` del
+   > servicio Postgres. Así se conecta por la red privada de Railway (sin
+   > SSL, más rápido y seguro).
 
 5. Railway construye y despliega solo. Cuando termine, en
    **Settings → Networking → Generate Domain** obtienes la URL pública
    (algo como `https://miven-production.up.railway.app`).
 
-6. Abran esa URL en el celular, entren con la contraseña y... ¡a comprar! 🎉
+6. Abran esa URL en el celular y... ¡a comprar! 🎉
    (En iPhone/Android pueden usar "Agregar a pantalla de inicio" para que
    parezca una app nativa.)
 
@@ -59,7 +57,6 @@ real entre ambos dispositivos.
 
 ```bash
 npm install
-cp .env.example .env      # edita APP_PASSWORD si quieres
 npm start                 # abre http://localhost:3000
 ```
 

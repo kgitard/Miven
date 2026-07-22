@@ -2,13 +2,7 @@
 
 const $ = (sel) => document.querySelector(sel);
 
-const loginView = $('#login');
 const appView = $('#app');
-const loginForm = $('#login-form');
-const loginError = $('#login-error');
-const passwordInput = $('#password-input');
-const nameInput = $('#name-input');
-
 const addForm = $('#add-form');
 const itemInput = $('#item-input');
 const qtyInput = $('#qty-input');
@@ -16,7 +10,8 @@ const list = $('#list');
 const emptyMsg = $('#empty');
 const counter = $('#counter');
 const clearBtn = $('#clear-btn');
-const logoutBtn = $('#logout-btn');
+const nameBtn = $('#name-btn');
+const nameLabel = $('#name-label');
 
 let items = [];
 let pollTimer = null;
@@ -27,6 +22,8 @@ function getName() {
 }
 function setName(name) {
   if (name) localStorage.setItem('miven_name', name);
+  else localStorage.removeItem('miven_name');
+  nameLabel.textContent = getName() || 'Tú';
 }
 
 // ---------- API ----------
@@ -35,32 +32,11 @@ async function api(path, options = {}) {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
-  if (res.status === 401) {
-    showLogin();
-    throw new Error('unauthorized');
-  }
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || 'Error');
   }
   return res.status === 204 ? null : res.json();
-}
-
-// ---------- Vistas ----------
-function showLogin() {
-  stopPolling();
-  appView.classList.add('hidden');
-  loginView.classList.remove('hidden');
-  nameInput.value = getName();
-  setTimeout(() => passwordInput.focus(), 50);
-}
-
-function showApp() {
-  loginView.classList.add('hidden');
-  appView.classList.remove('hidden');
-  itemInput.focus();
-  refresh();
-  startPolling();
 }
 
 // ---------- Render ----------
@@ -130,7 +106,7 @@ async function refresh() {
     items = await api('/api/items');
     render();
   } catch (err) {
-    if (err.message !== 'unauthorized') console.error(err);
+    console.error(err);
   }
 }
 
@@ -151,10 +127,8 @@ async function addItem(name, quantity) {
     });
     await refresh();
   } catch (err) {
-    if (err.message !== 'unauthorized') {
-      items = items.filter((i) => i.id !== optimisticId);
-      render();
-    }
+    items = items.filter((i) => i.id !== optimisticId);
+    render();
   }
 }
 
@@ -168,7 +142,7 @@ async function toggle(item) {
     });
     await refresh();
   } catch (err) {
-    if (err.message !== 'unauthorized') refresh();
+    refresh();
   }
 }
 
@@ -178,7 +152,7 @@ async function removeItem(item) {
   try {
     await api('/api/items/' + item.id, { method: 'DELETE' });
   } catch (err) {
-    if (err.message !== 'unauthorized') refresh();
+    refresh();
   }
 }
 
@@ -189,7 +163,7 @@ async function clearCompleted() {
     await api('/api/items/clear-completed', { method: 'POST' });
     await refresh();
   } catch (err) {
-    if (err.message !== 'unauthorized') refresh();
+    refresh();
   }
 }
 
@@ -206,23 +180,6 @@ function stopPolling() {
 }
 
 // ---------- Eventos ----------
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  loginError.classList.add('hidden');
-  setName(nameInput.value.trim());
-  try {
-    await api('/api/login', {
-      method: 'POST',
-      body: JSON.stringify({ password: passwordInput.value }),
-    });
-    passwordInput.value = '';
-    showApp();
-  } catch (err) {
-    loginError.textContent = 'Contraseña incorrecta';
-    loginError.classList.remove('hidden');
-  }
-});
-
 addForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const name = itemInput.value.trim();
@@ -236,24 +193,17 @@ addForm.addEventListener('submit', (e) => {
 
 clearBtn.addEventListener('click', clearCompleted);
 
-logoutBtn.addEventListener('click', async () => {
-  await api('/api/logout', { method: 'POST' }).catch(() => {});
-  showLogin();
+nameBtn.addEventListener('click', () => {
+  const actual = getName();
+  const nuevo = window.prompt('¿Cómo te llamas? (aparece junto a lo que agregas)', actual);
+  if (nuevo !== null) setName(nuevo.trim());
 });
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && !appView.classList.contains('hidden')) {
-    refresh();
-  }
+  if (document.visibilityState === 'visible') refresh();
 });
 
 // ---------- Arranque ----------
-(async function boot() {
-  try {
-    const { authed } = await api('/api/session');
-    if (authed) showApp();
-    else showLogin();
-  } catch {
-    showLogin();
-  }
-})();
+setName(getName());
+refresh();
+startPolling();

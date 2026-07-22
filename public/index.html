@@ -12,38 +12,14 @@
     />
   </head>
   <body>
-    <!-- Pantalla de acceso -->
-    <div id="login" class="login hidden">
-      <form id="login-form" class="login-card">
-        <div class="logo">🛒</div>
-        <h1>Miven</h1>
-        <p class="subtitle">Su lista de compras compartida</p>
-        <input
-          id="name-input"
-          type="text"
-          placeholder="Tu nombre (opcional)"
-          autocomplete="name"
-        />
-        <input
-          id="password-input"
-          type="password"
-          placeholder="Contraseña"
-          autocomplete="current-password"
-          required
-        />
-        <button type="submit">Entrar</button>
-        <p id="login-error" class="error hidden"></p>
-      </form>
-    </div>
-
     <!-- App principal -->
-    <div id="app" class="app hidden">
+    <div id="app" class="app">
       <header class="header">
         <div class="header-title">
           <span class="header-logo">🛒</span>
           <h1>Miven</h1>
         </div>
-        <button id="logout-btn" class="icon-btn" title="Salir">Salir</button>
+        <button id="name-btn" class="icon-btn" title="Cambiar tu nombre">👤 <span id="name-label">Tú</span></button>
       </header>
 
       <form id="add-form" class="add-form">
