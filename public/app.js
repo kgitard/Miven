@@ -1,0 +1,259 @@
+// Lógica del cliente de Miven.
+
+const $ = (sel) => document.querySelector(sel);
+
+const loginView = $('#login');
+const appView = $('#app');
+const loginForm = $('#login-form');
+const loginError = $('#login-error');
+const passwordInput = $('#password-input');
+const nameInput = $('#name-input');
+
+const addForm = $('#add-form');
+const itemInput = $('#item-input');
+const qtyInput = $('#qty-input');
+const list = $('#list');
+const emptyMsg = $('#empty');
+const counter = $('#counter');
+const clearBtn = $('#clear-btn');
+const logoutBtn = $('#logout-btn');
+
+let items = [];
+let pollTimer = null;
+
+// El nombre se guarda localmente en cada dispositivo.
+function getName() {
+  return localStorage.getItem('miven_name') || '';
+}
+function setName(name) {
+  if (name) localStorage.setItem('miven_name', name);
+}
+
+// ---------- API ----------
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  });
+  if (res.status === 401) {
+    showLogin();
+    throw new Error('unauthorized');
+  }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Error');
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+// ---------- Vistas ----------
+function showLogin() {
+  stopPolling();
+  appView.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  nameInput.value = getName();
+  setTimeout(() => passwordInput.focus(), 50);
+}
+
+function showApp() {
+  loginView.classList.add('hidden');
+  appView.classList.remove('hidden');
+  itemInput.focus();
+  refresh();
+  startPolling();
+}
+
+// ---------- Render ----------
+function render() {
+  list.innerHTML = '';
+  if (items.length === 0) {
+    emptyMsg.classList.remove('hidden');
+  } else {
+    emptyMsg.classList.add('hidden');
+  }
+
+  for (const item of items) {
+    const li = document.createElement('li');
+    li.className = 'item' + (item.done ? ' done' : '');
+
+    const check = document.createElement('button');
+    check.className = 'check' + (item.done ? ' checked' : '');
+    check.innerHTML = item.done ? '✓' : '';
+    check.setAttribute('aria-label', item.done ? 'Marcar pendiente' : 'Marcar comprado');
+    check.addEventListener('click', () => toggle(item));
+
+    const body = document.createElement('div');
+    body.className = 'item-body';
+
+    const name = document.createElement('div');
+    name.className = 'item-name';
+    if (item.quantity) {
+      const badge = document.createElement('span');
+      badge.className = 'qty-badge';
+      badge.textContent = item.quantity;
+      name.appendChild(badge);
+    }
+    name.appendChild(document.createTextNode(item.name));
+
+    body.appendChild(name);
+
+    if (item.added_by) {
+      const meta = document.createElement('div');
+      meta.className = 'item-meta';
+      meta.textContent = 'Agregado por ' + item.added_by;
+      body.appendChild(meta);
+    }
+
+    const del = document.createElement('button');
+    del.className = 'del-btn';
+    del.innerHTML = '🗑';
+    del.setAttribute('aria-label', 'Borrar');
+    del.addEventListener('click', () => removeItem(item));
+
+    li.append(check, body, del);
+    list.appendChild(li);
+  }
+
+  const pending = items.filter((i) => !i.done).length;
+  const done = items.length - pending;
+  counter.textContent =
+    items.length === 0
+      ? ''
+      : `${pending} pendiente${pending === 1 ? '' : 's'}` +
+        (done ? ` · ${done} comprado${done === 1 ? '' : 's'}` : '');
+  clearBtn.classList.toggle('hidden', done === 0);
+}
+
+// ---------- Acciones ----------
+async function refresh() {
+  try {
+    items = await api('/api/items');
+    render();
+  } catch (err) {
+    if (err.message !== 'unauthorized') console.error(err);
+  }
+}
+
+async function addItem(name, quantity) {
+  const optimisticId = 'tmp-' + Date.now();
+  items.push({
+    id: optimisticId,
+    name,
+    quantity: quantity || null,
+    done: false,
+    added_by: getName() || null,
+  });
+  render();
+  try {
+    await api('/api/items', {
+      method: 'POST',
+      body: JSON.stringify({ name, quantity, addedBy: getName() }),
+    });
+    await refresh();
+  } catch (err) {
+    if (err.message !== 'unauthorized') {
+      items = items.filter((i) => i.id !== optimisticId);
+      render();
+    }
+  }
+}
+
+async function toggle(item) {
+  item.done = !item.done;
+  render();
+  try {
+    await api('/api/items/' + item.id, {
+      method: 'PATCH',
+      body: JSON.stringify({ done: item.done }),
+    });
+    await refresh();
+  } catch (err) {
+    if (err.message !== 'unauthorized') refresh();
+  }
+}
+
+async function removeItem(item) {
+  items = items.filter((i) => i.id !== item.id);
+  render();
+  try {
+    await api('/api/items/' + item.id, { method: 'DELETE' });
+  } catch (err) {
+    if (err.message !== 'unauthorized') refresh();
+  }
+}
+
+async function clearCompleted() {
+  items = items.filter((i) => !i.done);
+  render();
+  try {
+    await api('/api/items/clear-completed', { method: 'POST' });
+    await refresh();
+  } catch (err) {
+    if (err.message !== 'unauthorized') refresh();
+  }
+}
+
+// ---------- Polling (sincroniza entre dispositivos) ----------
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(() => {
+    if (document.visibilityState === 'visible') refresh();
+  }, 3000);
+}
+function stopPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = null;
+}
+
+// ---------- Eventos ----------
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginError.classList.add('hidden');
+  setName(nameInput.value.trim());
+  try {
+    await api('/api/login', {
+      method: 'POST',
+      body: JSON.stringify({ password: passwordInput.value }),
+    });
+    passwordInput.value = '';
+    showApp();
+  } catch (err) {
+    loginError.textContent = 'Contraseña incorrecta';
+    loginError.classList.remove('hidden');
+  }
+});
+
+addForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = itemInput.value.trim();
+  if (!name) return;
+  const qty = qtyInput.value.trim();
+  addItem(name, qty);
+  itemInput.value = '';
+  qtyInput.value = '';
+  itemInput.focus();
+});
+
+clearBtn.addEventListener('click', clearCompleted);
+
+logoutBtn.addEventListener('click', async () => {
+  await api('/api/logout', { method: 'POST' }).catch(() => {});
+  showLogin();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !appView.classList.contains('hidden')) {
+    refresh();
+  }
+});
+
+// ---------- Arranque ----------
+(async function boot() {
+  try {
+    const { authed } = await api('/api/session');
+    if (authed) showApp();
+    else showLogin();
+  } catch {
+    showLogin();
+  }
+})();
