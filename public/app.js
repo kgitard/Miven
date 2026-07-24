@@ -5,7 +5,6 @@ const $ = (sel) => document.querySelector(sel);
 const appView = $('#app');
 const addForm = $('#add-form');
 const itemInput = $('#item-input');
-const qtyInput = $('#qty-input');
 const list = $('#list');
 const emptyMsg = $('#empty');
 const counter = $('#counter');
@@ -63,12 +62,6 @@ function render() {
 
     const name = document.createElement('div');
     name.className = 'item-name';
-    if (item.quantity) {
-      const badge = document.createElement('span');
-      badge.className = 'qty-badge';
-      badge.textContent = item.quantity;
-      name.appendChild(badge);
-    }
     name.appendChild(document.createTextNode(item.name));
 
     body.appendChild(name);
@@ -110,12 +103,11 @@ async function refresh() {
   }
 }
 
-async function addItem(name, quantity) {
+async function addItem(name) {
   const optimisticId = 'tmp-' + Date.now();
   items.push({
     id: optimisticId,
     name,
-    quantity: quantity || null,
     done: false,
     added_by: getName() || null,
   });
@@ -123,7 +115,7 @@ async function addItem(name, quantity) {
   try {
     await api('/api/items', {
       method: 'POST',
-      body: JSON.stringify({ name, quantity, addedBy: getName() }),
+      body: JSON.stringify({ name, addedBy: getName() }),
     });
     await refresh();
   } catch (err) {
@@ -184,10 +176,8 @@ addForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const name = itemInput.value.trim();
   if (!name) return;
-  const qty = qtyInput.value.trim();
-  addItem(name, qty);
+  addItem(name);
   itemInput.value = '';
-  qtyInput.value = '';
   itemInput.focus();
 });
 

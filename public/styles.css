@@ -144,12 +144,6 @@ input {
   flex: 1 1 auto;
 }
 
-.add-form .qty {
-  flex: 0 0 60px;
-  width: 60px;
-  text-align: center;
-}
-
 .add-btn {
   flex: 0 0 48px;
   width: 48px;
@@ -255,17 +249,6 @@ input {
   color: var(--muted);
 }
 
-.qty-badge {
-  display: inline-block;
-  background: #e6f5f3;
-  color: var(--teal-dark);
-  border-radius: 8px;
-  padding: 1px 8px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-right: 6px;
-}
-
 .del-btn {
   flex: 0 0 auto;
   background: transparent;
@@ -333,10 +316,6 @@ input {
     --text: #e5e7eb;
     --muted: #9ca3af;
     --border: #2b3a35;
-  }
-  .qty-badge {
-    background: #123330;
-    color: #5eead4;
   }
   .del-btn:active {
     background: #3b1a1a;
