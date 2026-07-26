@@ -7,7 +7,7 @@ real entre ambos dispositivos.
 ## Características
 
 - ✅ Agregar, marcar como comprado y borrar productos
-- 🔢 Cantidad opcional por producto
+- 🗂️ Dos listas con pestañas: **Frecuentes** (día a día) y **Costco** (mensual)
 - 👥 Muestra quién agregó cada cosa
 - 🚪 Sin contraseña: se entra directo con el link (más simple)
 - 🔄 Se sincroniza automáticamente entre celulares (actualiza cada 3 segundos)

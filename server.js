@@ -19,6 +19,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = process.env.PORT || 3000;
 
+// Listas disponibles. Si quieres agregar otra (ej. 'farmacia'), añádela aquí.
+const LISTS = ['frecuente', 'costco'];
+const normalizeList = (v) => (LISTS.includes(v) ? v : 'frecuente');
+
 const app = express();
 app.use(express.json());
 app.disable('x-powered-by');
@@ -38,7 +42,8 @@ app.post('/api/items', async (req, res, next) => {
     if (!name) return res.status(400).json({ error: 'El nombre es obligatorio' });
     const quantity = (req.body?.quantity || '').trim() || null;
     const addedBy = (req.body?.addedBy || '').trim().slice(0, 40) || null;
-    const item = await addItem({ name: name.slice(0, 200), quantity, addedBy });
+    const list = normalizeList(req.body?.list);
+    const item = await addItem({ name: name.slice(0, 200), quantity, addedBy, list });
     res.status(201).json(item);
   } catch (err) {
     next(err);
@@ -72,7 +77,8 @@ app.delete('/api/items/:id', async (req, res, next) => {
 
 app.post('/api/items/clear-completed', async (req, res, next) => {
   try {
-    const removed = await clearCompleted();
+    const list = req.body?.list ? normalizeList(req.body.list) : null;
+    const removed = await clearCompleted(list);
     res.json({ removed });
   } catch (err) {
     next(err);

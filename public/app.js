@@ -11,9 +11,26 @@ const counter = $('#counter');
 const clearBtn = $('#clear-btn');
 const nameBtn = $('#name-btn');
 const nameLabel = $('#name-label');
+const tabButtons = document.querySelectorAll('.tab');
+const countEls = {
+  frecuente: $('#count-frecuente'),
+  costco: $('#count-costco'),
+};
 
 let items = [];
 let pollTimer = null;
+
+// Lista activa (pestaña). Se recuerda en el dispositivo.
+function getActiveList() {
+  return localStorage.getItem('miven_list') || 'frecuente';
+}
+function setActiveList(list) {
+  localStorage.setItem('miven_list', list);
+  tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.list === list));
+  itemInput.placeholder =
+    list === 'costco' ? '¿Qué compramos en Costco?' : '¿Qué necesitamos comprar?';
+  render();
+}
 
 // El nombre se guarda localmente en cada dispositivo.
 function getName() {
@@ -39,15 +56,25 @@ async function api(path, options = {}) {
 }
 
 // ---------- Render ----------
+function itemList(item) {
+  return item.list_name || 'frecuente';
+}
+
 function render() {
-  list.innerHTML = '';
-  if (items.length === 0) {
-    emptyMsg.classList.remove('hidden');
-  } else {
-    emptyMsg.classList.add('hidden');
+  const activeList = getActiveList();
+
+  // Contador de pendientes en cada pestaña.
+  for (const key of ['frecuente', 'costco']) {
+    const pend = items.filter((i) => itemList(i) === key && !i.done).length;
+    if (countEls[key]) countEls[key].textContent = pend ? String(pend) : '';
   }
 
-  for (const item of items) {
+  const visibles = items.filter((i) => itemList(i) === activeList);
+
+  list.innerHTML = '';
+  emptyMsg.classList.toggle('hidden', visibles.length !== 0);
+
+  for (const item of visibles) {
     const li = document.createElement('li');
     li.className = 'item' + (item.done ? ' done' : '');
 
@@ -83,10 +110,10 @@ function render() {
     list.appendChild(li);
   }
 
-  const pending = items.filter((i) => !i.done).length;
-  const done = items.length - pending;
+  const pending = visibles.filter((i) => !i.done).length;
+  const done = visibles.length - pending;
   counter.textContent =
-    items.length === 0
+    visibles.length === 0
       ? ''
       : `${pending} pendiente${pending === 1 ? '' : 's'}` +
         (done ? ` · ${done} comprado${done === 1 ? '' : 's'}` : '');
@@ -104,18 +131,20 @@ async function refresh() {
 }
 
 async function addItem(name) {
+  const activeList = getActiveList();
   const optimisticId = 'tmp-' + Date.now();
   items.push({
     id: optimisticId,
     name,
     done: false,
     added_by: getName() || null,
+    list_name: activeList,
   });
   render();
   try {
     await api('/api/items', {
       method: 'POST',
-      body: JSON.stringify({ name, addedBy: getName() }),
+      body: JSON.stringify({ name, addedBy: getName(), list: activeList }),
     });
     await refresh();
   } catch (err) {
@@ -149,10 +178,14 @@ async function removeItem(item) {
 }
 
 async function clearCompleted() {
-  items = items.filter((i) => !i.done);
+  const activeList = getActiveList();
+  items = items.filter((i) => !(i.done && itemList(i) === activeList));
   render();
   try {
-    await api('/api/items/clear-completed', { method: 'POST' });
+    await api('/api/items/clear-completed', {
+      method: 'POST',
+      body: JSON.stringify({ list: activeList }),
+    });
     await refresh();
   } catch (err) {
     refresh();
@@ -183,6 +216,10 @@ addForm.addEventListener('submit', (e) => {
 
 clearBtn.addEventListener('click', clearCompleted);
 
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => setActiveList(btn.dataset.list));
+});
+
 nameBtn.addEventListener('click', () => {
   const actual = getName();
   const nuevo = window.prompt('¿Cómo te llamas? (aparece junto a lo que agregas)', actual);
@@ -195,5 +232,6 @@ document.addEventListener('visibilitychange', () => {
 
 // ---------- Arranque ----------
 setName(getName());
+setActiveList(getActiveList());
 refresh();
 startPolling();

@@ -21,7 +21,13 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 - **Sin contraseña:** cualquiera con el link entra directo (así lo pidió el
   dueño para que sea más simple). El nombre de cada persona se guarda en
   `localStorage` del navegador y se envía al agregar items.
-- **Datos:** tabla `items` (id, name, quantity, done, added_by, created_at).
+- **Listas (pestañas):** cada item pertenece a una lista (`list_name`).
+  Hay dos: `frecuente` (compras del día a día) y `costco` (la compra
+  mensual). El frontend muestra una pestaña por lista con el contador de
+  pendientes; la pestaña activa se recuerda en `localStorage` (`miven_list`).
+  Las listas válidas están definidas en `LISTS` dentro de `server.js`.
+- **Datos:** tabla `items` (id, name, quantity, done, added_by, list_name,
+  created_at).
 - **Sincronización:** el cliente hace polling cada 3 s (`startPolling` en
   `app.js`), por eso los cambios de uno aparecen en el celular del otro.
 
@@ -30,10 +36,10 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 | Método | Ruta                        | Descripción                    |
 | ------ | --------------------------- | ------------------------------ |
 | GET    | `/api/items`                | lista de items                 |
-| POST   | `/api/items`                | `{ name, quantity, addedBy }`  |
+| POST   | `/api/items`                | `{ name, addedBy, list }`      |
 | PATCH  | `/api/items/:id`            | `{ name?, quantity?, done? }`  |
 | DELETE | `/api/items/:id`            | borra un item                  |
-| POST   | `/api/items/clear-completed`| borra todos los comprados      |
+| POST   | `/api/items/clear-completed`| `{ list? }` borra comprados    |
 | GET    | `/health`                   | healthcheck para Railway       |
 
 ## Variables de entorno
@@ -53,8 +59,9 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 
 ## Ideas para extender
 
+- Más listas (despensa, farmacia, etc.): agrégalas a `LISTS` en `server.js`
+  y añade su pestaña en `public/index.html` + su contador en `app.js`.
 - Categorías por producto y agrupado por pasillo.
-- Múltiples listas (despensa, farmacia, etc.).
 - Historial de compras / productos frecuentes.
 - Notificaciones push.
 - Si más adelante quieren privacidad, se puede volver a agregar una
