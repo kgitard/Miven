@@ -308,6 +308,7 @@ input {
   color: var(--muted);
 }
 
+.move-btn,
 .del-btn {
   flex: 0 0 auto;
   background: transparent;
@@ -315,8 +316,17 @@ input {
   color: var(--muted);
   font-size: 20px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 7px;
   border-radius: 8px;
+}
+
+.move-btn {
+  font-size: 18px;
+  opacity: 0.85;
+}
+
+.move-btn:active {
+  background: var(--bg);
 }
 
 .del-btn:active {

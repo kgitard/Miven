@@ -57,6 +57,7 @@ app.patch('/api/items/:id', async (req, res, next) => {
     if (typeof req.body?.quantity === 'string')
       fields.quantity = req.body.quantity.trim() || null;
     if (typeof req.body?.done === 'boolean') fields.done = req.body.done;
+    if (typeof req.body?.list === 'string') fields.list_name = normalizeList(req.body.list);
     const item = await updateItem(req.params.id, fields);
     if (!item) return res.status(404).json({ error: 'No encontrado' });
     res.json(item);

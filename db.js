@@ -95,13 +95,14 @@ export async function updateItem(id, fields) {
     if (fields.name !== undefined) item.name = fields.name;
     if (fields.quantity !== undefined) item.quantity = fields.quantity;
     if (fields.done !== undefined) item.done = fields.done;
+    if (fields.list_name !== undefined) item.list_name = fields.list_name;
     return item;
   }
 
   const sets = [];
   const values = [];
   let n = 1;
-  for (const key of ['name', 'quantity', 'done']) {
+  for (const key of ['name', 'quantity', 'done', 'list_name']) {
     if (fields[key] !== undefined) {
       sets.push(`${key} = $${n++}`);
       values.push(fields[key]);

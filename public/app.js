@@ -100,13 +100,21 @@ function render() {
       body.appendChild(meta);
     }
 
+    const target = itemList(item) === 'costco' ? 'frecuente' : 'costco';
+    const move = document.createElement('button');
+    move.className = 'move-btn';
+    move.textContent = target === 'costco' ? '📦' : '🛒';
+    move.title = target === 'costco' ? 'Mover a Costco' : 'Mover a Frecuentes';
+    move.setAttribute('aria-label', move.title);
+    move.addEventListener('click', () => moveItem(item));
+
     const del = document.createElement('button');
     del.className = 'del-btn';
     del.innerHTML = '🗑';
     del.setAttribute('aria-label', 'Borrar');
     del.addEventListener('click', () => removeItem(item));
 
-    li.append(check, body, del);
+    li.append(check, body, move, del);
     list.appendChild(li);
   }
 
@@ -160,6 +168,23 @@ async function toggle(item) {
     await api('/api/items/' + item.id, {
       method: 'PATCH',
       body: JSON.stringify({ done: item.done }),
+    });
+    await refresh();
+  } catch (err) {
+    refresh();
+  }
+}
+
+async function moveItem(item) {
+  const target = itemList(item) === 'costco' ? 'frecuente' : 'costco';
+  // Si el item aún no se guardó en el servidor, solo esperamos al refresh.
+  if (typeof item.id === 'string' && item.id.startsWith('tmp')) return;
+  item.list_name = target; // desaparece de la vista actual al cambiar de lista
+  render();
+  try {
+    await api('/api/items/' + item.id, {
+      method: 'PATCH',
+      body: JSON.stringify({ list: target }),
     });
     await refresh();
   } catch (err) {

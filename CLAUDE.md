@@ -37,7 +37,7 @@ railway.json         Config de despliegue en Railway (start + healthcheck)
 | ------ | --------------------------- | ------------------------------ |
 | GET    | `/api/items`                | lista de items                 |
 | POST   | `/api/items`                | `{ name, addedBy, list }`      |
-| PATCH  | `/api/items/:id`            | `{ name?, quantity?, done? }`  |
+| PATCH  | `/api/items/:id`            | `{ name?, done?, list? }`      |
 | DELETE | `/api/items/:id`            | borra un item                  |
 | POST   | `/api/items/clear-completed`| `{ list? }` borra comprados    |
 | GET    | `/health`                   | healthcheck para Railway       |
