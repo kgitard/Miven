@@ -217,17 +217,6 @@ async function clearCompleted() {
   }
 }
 
-// ---------- Aviso de almacenamiento temporal ----------
-async function checkStorage() {
-  try {
-    const health = await api('/health');
-    const warn = $('#storage-warning');
-    warn.classList.toggle('hidden', health?.storage !== 'memory');
-  } catch {
-    /* si falla, no mostramos nada */
-  }
-}
-
 // ---------- Polling (sincroniza entre dispositivos) ----------
 function startPolling() {
   stopPolling();
@@ -270,5 +259,4 @@ document.addEventListener('visibilitychange', () => {
 setName(getName());
 setActiveList(getActiveList());
 refresh();
-checkStorage();
 startPolling();
