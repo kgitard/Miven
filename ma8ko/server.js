@@ -12,7 +12,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
 
 // Tipos de registro válidos y categorías de gasto.
-const KINDS = ['feeding', 'diaper', 'sleep', 'growth', 'med', 'temp', 'note'];
+// psleep = sueño de los papás (data.who = nombre de quien durmió).
+const KINDS = ['feeding', 'diaper', 'sleep', 'growth', 'med', 'temp', 'note', 'psleep'];
 const EXPENSE_CATEGORIES = [
   'panales',
   'leche',

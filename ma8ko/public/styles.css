@@ -472,6 +472,51 @@ h3 {
   justify-content: center;
 }
 
+.card-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px 14px;
+  box-shadow: var(--shadow);
+}
+.card-box-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.card-box-head .section {
+  margin: 0;
+}
+.card-box-head small {
+  font-weight: 400;
+  font-size: 12px;
+}
+.card-box-head .link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+.card-box .stat {
+  box-shadow: none;
+  background: var(--bg);
+}
+.btn.primary.night {
+  background: #312e81;
+  border-color: #312e81;
+}
+.btn.primary.sun {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+.timer.k-psleep {
+  background: #312e81;
+}
+.entry.k-psleep {
+  border-left-color: #312e81;
+}
 .quick-start {
   display: grid;
   grid-template-columns: 1fr 1fr;

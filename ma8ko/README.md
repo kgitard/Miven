@@ -11,6 +11,9 @@ about the baby and see it instantly on both phones.
 - **Diapers:** pee / poop / both, poop color and texture, with warnings when a
   color should be checked by the pediatrician.
 - **Sleep:** one-tap timer ("Fell asleep" → "Woke up") or log it afterwards.
+- **Our sleep (parents):** each phone has a one-tap "🌙 I'm going to sleep" /
+  "☀️ I woke up" button for its owner, plus "log past sleep". The Today screen
+  shows how much each of you slept in the last 24 h and your longest stretch.
 - **Medicines / vitamins, temperature** (fever warning) and **weight / length /
   head circumference** with a chart.
 - **Photos** on any entry (poop, rashes, anything). They're compressed on the
@@ -86,6 +89,7 @@ npm start          # http://localhost:3000 (without DATABASE_URL it uses memory)
 | PATCH/DELETE | `/api/expenses/:id`     |                                               |
 | GET    | `/health`                     | healthcheck for Railway                       |
 
-`kind`: `feeding`, `diaper`, `sleep`, `growth`, `med`, `temp`, `note`.
+`kind`: `feeding`, `diaper`, `sleep`, `growth`, `med`, `temp`, `note`,
+`psleep` (parents' sleep, `data.who` = the parent's name).
 Values are always stored in metric (ml, kg, cm, °C); the app converts to
 oz/lb/in/°F if chosen in Settings.

@@ -45,5 +45,6 @@ public/icon.svg    Icon (little blue turtle); the PNGs are rendered from it
   Spanish (legacy); don't rename identifiers that are stored as data.
 - No frontend frameworks: hand-written HTML/CSS/JS.
 - Entry kinds (`entries.kind`): feeding, diaper, sleep, growth, med, temp,
-  note. Any entry can have `data.ask` (ask the pediatrician) and
+  note, psleep (parents' sleep; `data.who` = parent's name; never counted in
+  the baby's sleep stats). Any entry can have `data.ask` (ask the pediatrician) and
   `data.resolved`.

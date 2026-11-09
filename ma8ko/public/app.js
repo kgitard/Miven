@@ -126,6 +126,7 @@ const KIND = {
   med: { label: 'Medicine', icon: '💊' },
   temp: { label: 'Temperature', icon: '🌡️' },
   note: { label: 'Note / photo', icon: '📷' },
+  psleep: { label: 'Our sleep', icon: '🛌' },
 };
 
 // Las claves (izq, der, pecho, popo…) son los valores guardados en la base: no cambiarlas.
@@ -183,6 +184,10 @@ const FORMS = {
     { key: 'texture', type: 'seg', label: 'Texture', options: opts(TEXTURE), show: isPoop },
   ],
   sleep: [{ type: 'duration', quick: [30, 60, 90, 120, 180] }],
+  psleep: [
+    { key: 'who', type: 'who', label: 'Who slept?' },
+    { type: 'duration', quick: [60, 120, 180, 240, 360, 480] },
+  ],
   growth: [
     { key: 'kg', type: 'num', label: 'Weight', unit: 'wt', step: '0.01' },
     { key: 'cm', type: 'num', label: 'Length', unit: 'len', step: '0.1' },
@@ -259,6 +264,9 @@ function describe(e) {
       }
       return s;
     }
+    case 'psleep':
+      if (isRunning(e)) return `${d.who || 'Parent'} sleeping…`;
+      return dur ? `${d.who || 'Parent'} slept ${fmtDur(dur)}` : `${d.who || 'Parent'} slept`;
     case 'sleep':
       if (isRunning(e)) return 'Sleeping…';
       return dur ? `Slept ${fmtDur(dur)}` : 'Sleep';
@@ -393,7 +401,9 @@ function renderTimers() {
   el.innerHTML = S.running
     .map((e) => {
       const isFeed = e.kind === 'feeding';
-      const label = isFeed ? (SIDE[e.data.side] ? `${SIDE[e.data.side]} breast` : 'Breastfeeding') : 'Sleeping';
+      const label = isFeed
+        ? SIDE[e.data.side] ? `${SIDE[e.data.side]} breast` : 'Breastfeeding'
+        : e.kind === 'psleep' ? `${e.data.who || 'Parent'} sleeping` : 'Baby sleeping';
       return `
       <div class="timer k-${e.kind}">
         <span class="timer-icon">${KIND[e.kind].icon}</span>
@@ -410,10 +420,12 @@ function renderTimers() {
 
 // ---------- Hoy ----------
 
-function sleepMsInRange(entries, from, to) {
+// Suma el sueño dentro de [from, to). `match` elige qué registros cuentan
+// (por defecto, el sueño del bebé).
+function sleepMsInRange(entries, from, to, match = (e) => e.kind === 'sleep') {
   let total = 0;
   for (const e of entries) {
-    if (e.kind !== 'sleep') continue;
+    if (!match(e)) continue;
     const a = Math.max(new Date(e.at).getTime(), from.getTime());
     const end = e.ended_at ? new Date(e.ended_at).getTime() : isRunning(e) ? Date.now() : null;
     if (end === null) continue;
@@ -448,6 +460,49 @@ function suggestedSide() {
   if (last.data.side === 'izq') return 'der';
   if (last.data.side === 'der') return 'izq';
   return 'izq';
+}
+
+// Personas conocidas: tú, quien haya registrado algo y quien haya dormido.
+function parentNames() {
+  const names = [S.me, ...S.recent.map((e) => e.added_by), ...S.recent.filter((e) => e.kind === 'psleep').map((e) => e.data.who)];
+  return [...new Set(names.filter(Boolean))];
+}
+
+// Tarjeta "Our sleep": botón de un toque para quien usa este celular y
+// cuánto durmió cada uno en las últimas 24 h.
+function parentsSleepCard() {
+  const now = new Date();
+  const from = new Date(now.getTime() - DAY);
+  const mine = S.running.find((e) => e.kind === 'psleep' && e.data.who === S.me);
+  const rows = parentNames().map((who) => {
+    const list = S.recent.filter((e) => e.kind === 'psleep' && e.data.who === who);
+    const total = sleepMsInRange(list, from, now, () => true);
+    let longest = 0;
+    for (const e of list) {
+      const end = e.ended_at ? new Date(e.ended_at) : isRunning(e) ? now : null;
+      if (end && end > from) longest = Math.max(longest, end - Math.max(new Date(e.at), from));
+    }
+    const asleep = S.running.some((e) => e.kind === 'psleep' && e.data.who === who);
+    return { who, total, longest, asleep };
+  });
+  return `
+    <div class="card-box">
+      <div class="card-box-head">
+        <h2 class="section">🛌 Our sleep <small class="muted">last 24 h</small></h2>
+        <button class="link" data-act="new" data-kind="psleep">+ log past sleep</button>
+      </div>
+      <div class="stats compact">${rows
+        .map(
+          (r) => `<div class="stat"><div class="stat-value small">${r.asleep ? '😴 asleep' : fmtDur(r.total)}</div>
+            <div class="stat-label">${esc(r.who)}${!r.asleep && r.longest >= MIN ? ` · longest ${fmtDur(r.longest)}` : ''}</div></div>`
+        )
+        .join('')}</div>
+      ${
+        mine
+          ? `<button class="btn primary block sun" data-act="stop-timer" data-id="${mine.id}">☀️ I woke up</button>`
+          : `<button class="btn primary block night" data-act="quick-psleep">🌙 I'm going to sleep</button>`
+      }
+    </div>`;
 }
 
 function renderHoy() {
@@ -499,6 +554,8 @@ function renderHoy() {
       <button data-act="new" data-kind="temp"><span>🌡️</span>Temp.</button>
       <button data-act="new" data-kind="growth"><span>📏</span>Weight / length</button>
     </div>
+
+    ${parentsSleepCard()}
 
     <h2 class="section">Today</h2>
     <div class="stats">
@@ -941,6 +998,8 @@ function defaultsFor(kind, preset) {
       return { method: 'axilar' };
     case 'note':
       return { topic: 'otro', ask: true };
+    case 'psleep':
+      return { who: S.me };
     case 'med': {
       const lm = last('med');
       return lm ? { name: lm.data.name, dose: lm.data.dose } : {};
@@ -997,6 +1056,11 @@ function fieldHtml(f) {
       <input type="number" inputmode="decimal" step="${f.step || 'any'}" min="0" data-k="${f.key}" value="${esc(d[f.key] ?? '')}" />
       ${quick.length ? `<div class="quick">${quick.map((q) => `<button type="button" class="chip" data-act="quick-val" data-key="${f.key}" data-val="${q}">${q}</button>`).join('')}</div>` : ''}
     </label>`;
+  }
+  if (f.type === 'who') {
+    return `<div class="field"><span>${f.label}</span><div class="seg">${parentNames()
+      .map((n) => `<button type="button" class="${d.who === n ? 'active' : ''}" data-act="seg" data-key="who" data-val="${esc(n)}">${esc(n)}</button>`)
+      .join('')}</div></div>`;
   }
   if (f.type === 'text') {
     return `<label class="field"><span>${f.label}</span>
@@ -1489,6 +1553,7 @@ const ACTIONS = {
   new: (el) => openForm(el.dataset.kind, null, el.dataset.preset),
   'quick-breast': (el) => startTimer('feeding', { method: 'pecho', side: el.dataset.side }).catch(fail),
   'quick-sleep': () => startTimer('sleep', {}).catch(fail),
+  'quick-psleep': () => startTimer('psleep', { who: S.me }).catch(fail),
   'stop-timer': (el, ev) => {
     ev.stopPropagation();
     stopTimer(el.dataset.id).catch(fail);
