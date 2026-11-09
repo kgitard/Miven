@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -18,22 +18,22 @@
     <section id="welcome" class="screen-center hidden">
       <form id="welcome-form" class="card narrow">
         <img class="welcome-logo" src="/icon.svg" alt="" />
-        <h1>¡Bienvenidos a Ma8ko!</h1>
+        <h1>Welcome to Ma8ko!</h1>
         <label class="field">
-          <span>¿Cómo te llamas?</span>
-          <input id="welcome-me" maxlength="40" placeholder="Ej. Kevin o Micaela" required />
+          <span>What's your name?</span>
+          <input id="welcome-me" maxlength="40" placeholder="e.g. Kevin or Micaela" required />
         </label>
         <div id="welcome-baby">
           <label class="field">
-            <span>Nombre del bebé</span>
-            <input id="welcome-baby-name" maxlength="60" placeholder="Ej. Mateo" />
+            <span>Baby's name</span>
+            <input id="welcome-baby-name" maxlength="60" placeholder="e.g. Mateo" />
           </label>
           <label class="field">
-            <span>Fecha de nacimiento</span>
+            <span>Date of birth</span>
             <input id="welcome-baby-birth" type="date" />
           </label>
         </div>
-        <button class="btn primary block" type="submit">Empezar</button>
+        <button class="btn primary block" type="submit">Get started</button>
       </form>
     </section>
 
@@ -45,7 +45,7 @@
           <div class="baby-name" id="baby-name">Ma8ko</div>
           <div class="baby-age" id="baby-age"></div>
         </div>
-        <button class="icon-btn" id="btn-settings" aria-label="Ajustes">⚙️</button>
+        <button class="icon-btn" id="btn-settings" aria-label="Settings">⚙️</button>
       </header>
 
       <div id="timers" class="timers"></div>
@@ -59,10 +59,10 @@
       </main>
 
       <nav class="tabbar">
-        <button data-view="hoy" class="active"><span>🏠</span>Hoy</button>
-        <button data-view="historial"><span>📅</span>Historial</button>
-        <button data-view="pediatra"><span>🩺</span>Pediatra</button>
-        <button data-view="gastos"><span>💰</span>Gastos</button>
+        <button data-view="hoy" class="active"><span>🏠</span>Today</button>
+        <button data-view="historial"><span>📅</span>History</button>
+        <button data-view="pediatra"><span>🩺</span>Pediatrician</button>
+        <button data-view="gastos"><span>💰</span>Expenses</button>
       </nav>
     </div>
 
@@ -75,11 +75,11 @@
 
     <!-- Visor de fotos a pantalla completa -->
     <div id="viewer" class="viewer hidden">
-      <img id="viewer-img" alt="Foto" />
+      <img id="viewer-img" alt="Photo" />
       <div class="viewer-bar">
         <button class="btn ghost light" id="viewer-prev">‹</button>
-        <a class="btn ghost light" id="viewer-download" download>Descargar</a>
-        <button class="btn ghost light" id="viewer-close">Cerrar</button>
+        <a class="btn ghost light" id="viewer-download" download>Download</a>
+        <button class="btn ghost light" id="viewer-close">Close</button>
         <button class="btn ghost light" id="viewer-next">›</button>
       </div>
     </div>

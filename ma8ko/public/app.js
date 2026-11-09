@@ -47,14 +47,14 @@ const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate(
 const ym = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 const toLocalInput = (d) => `${ymd(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-const fmtTime = (iso) => new Date(iso).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+const fmtTime = (iso) => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 const fmtDate = (d, opts = { weekday: 'long', day: 'numeric', month: 'short' }) =>
-  new Date(d).toLocaleDateString('es', opts);
+  new Date(d).toLocaleDateString('en-US', opts);
 
 function fmtDay(d) {
   const diff = Math.round((startOfDay(new Date()) - startOfDay(d)) / DAY);
-  if (diff === 0) return 'Hoy';
-  if (diff === 1) return 'Ayer';
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
   return fmtDate(d);
 }
 
@@ -74,8 +74,8 @@ function fmtClock(ms) {
 
 function fmtAgo(iso) {
   const ms = Date.now() - new Date(iso).getTime();
-  if (ms < MIN) return 'justo ahora';
-  return 'hace ' + fmtDur(ms);
+  if (ms < MIN) return 'just now';
+  return fmtDur(ms) + ' ago';
 }
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -119,48 +119,49 @@ const fmtU = (kind, v) => `${UNITS[kind].show(v)} ${UNITS[kind].unit()}`;
 // ======================= Catálogos =======================
 
 const KIND = {
-  feeding: { label: 'Toma', icon: '🍼' },
-  diaper: { label: 'Pañal', icon: '🧷' },
-  sleep: { label: 'Sueño', icon: '😴' },
-  growth: { label: 'Crecimiento', icon: '📏' },
-  med: { label: 'Medicina', icon: '💊' },
-  temp: { label: 'Temperatura', icon: '🌡️' },
-  note: { label: 'Nota / foto', icon: '📷' },
+  feeding: { label: 'Feeding', icon: '🍼' },
+  diaper: { label: 'Diaper', icon: '🧷' },
+  sleep: { label: 'Sleep', icon: '😴' },
+  growth: { label: 'Growth', icon: '📏' },
+  med: { label: 'Medicine', icon: '💊' },
+  temp: { label: 'Temperature', icon: '🌡️' },
+  note: { label: 'Note / photo', icon: '📷' },
 };
 
-const SIDE = { izq: 'izquierdo', der: 'derecho', ambos: 'ambos lados' };
-const MILK = { materna: 'leche materna', formula: 'fórmula' };
-const DIAPER = { pipi: 'Pipí', popo: 'Popó', ambos: 'Pipí y popó', seco: 'Seco' };
+// Las claves (izq, der, pecho, popo…) son los valores guardados en la base: no cambiarlas.
+const SIDE = { izq: 'Left', der: 'Right', ambos: 'Both sides' };
+const MILK = { materna: 'breast milk', formula: 'formula' };
+const DIAPER = { pipi: 'Pee', popo: 'Poop', ambos: 'Pee + poop', seco: 'Dry' };
 const POOP_COLORS = [
-  ['amarillo', 'Amarillo', '#e6b800'],
-  ['verde', 'Verde', '#6b8e23'],
-  ['cafe', 'Café', '#8b5a2b'],
-  ['negro', 'Negro', '#222222'],
-  ['rojo', 'Rojo / sangre', '#c0392b'],
-  ['blanco', 'Blanco / gris', '#cfcfcf'],
+  ['amarillo', 'Yellow', '#e6b800'],
+  ['verde', 'Green', '#6b8e23'],
+  ['cafe', 'Brown', '#8b5a2b'],
+  ['negro', 'Black', '#222222'],
+  ['rojo', 'Red / blood', '#c0392b'],
+  ['blanco', 'White / gray', '#cfcfcf'],
 ];
-const TEXTURE = { liquida: 'líquida', blanda: 'blanda', pastosa: 'pastosa', dura: 'dura' };
+const TEXTURE = { liquida: 'watery', blanda: 'soft', pastosa: 'pasty', dura: 'hard' };
 const TOPIC = {
-  popo: 'Popó',
-  piel: 'Piel / sarpullido',
-  vomito: 'Vómito / regurgitación',
-  respira: 'Respiración / tos',
-  ojos: 'Ojos / oídos',
-  momento: 'Momento especial',
-  otro: 'Otro',
+  popo: 'Poop',
+  piel: 'Skin / rash',
+  vomito: 'Vomit / spit-up',
+  respira: 'Breathing / cough',
+  ojos: 'Eyes / ears',
+  momento: 'Special moment',
+  otro: 'Other',
 };
-const TEMP_METHOD = { axilar: 'axilar', rectal: 'rectal', oido: 'oído', frente: 'frente' };
+const TEMP_METHOD = { axilar: 'armpit', rectal: 'rectal', oido: 'ear', frente: 'forehead' };
 
 const CATS = {
-  panales: ['Pañales e higiene', '🧻'],
-  leche: ['Leche / fórmula', '🍼'],
-  comida: ['Comida', '🥣'],
-  ropa: ['Ropa', '👕'],
-  salud: ['Médico / farmacia', '💊'],
-  equipo: ['Equipo (carriola, cuna…)', '🛏️'],
-  juguetes: ['Juguetes y libros', '🧸'],
-  cuidado: ['Guardería / niñera', '🧑‍🍼'],
-  otros: ['Otros', '📦'],
+  panales: ['Diapers & hygiene', '🧻'],
+  leche: ['Milk / formula', '🍼'],
+  comida: ['Food', '🥣'],
+  ropa: ['Clothes', '👕'],
+  salud: ['Doctor / pharmacy', '💊'],
+  equipo: ['Gear (stroller, crib…)', '🛏️'],
+  juguetes: ['Toys & books', '🧸'],
+  cuidado: ['Daycare / babysitter', '🧑‍🍼'],
+  otros: ['Other', '📦'],
 };
 
 const opts = (obj) => Object.entries(obj).map(([k, v]) => [k, v[0].toUpperCase() + v.slice(1)]);
@@ -169,33 +170,33 @@ const isPoop = (d) => d.type === 'popo' || d.type === 'ambos';
 // Campos de cada formulario. `show` decide si el campo aplica según los datos.
 const FORMS = {
   feeding: [
-    { key: 'method', type: 'seg', label: 'Tipo', options: [['pecho', 'Pecho'], ['biberon', 'Biberón'], ['solidos', 'Sólidos']] },
-    { key: 'side', type: 'seg', label: 'Lado', options: [['izq', 'Izquierdo'], ['der', 'Derecho'], ['ambos', 'Ambos']], show: (d) => d.method === 'pecho' },
-    { key: 'milk', type: 'seg', label: 'Leche', options: [['materna', 'Materna'], ['formula', 'Fórmula']], show: (d) => d.method === 'biberon' },
-    { key: 'ml', type: 'num', label: 'Cantidad', unit: 'vol', show: (d) => d.method === 'biberon', quick: () => (US() ? [1, 2, 3, 4, 5, 6] : [30, 60, 90, 120, 150, 180]) },
-    { key: 'food', type: 'text', label: '¿Qué comió?', placeholder: 'Ej. puré de zanahoria', show: (d) => d.method === 'solidos' },
+    { key: 'method', type: 'seg', label: 'Type', options: [['pecho', 'Breast'], ['biberon', 'Bottle'], ['solidos', 'Solids']] },
+    { key: 'side', type: 'seg', label: 'Side', options: [['izq', 'Left'], ['der', 'Right'], ['ambos', 'Both']], show: (d) => d.method === 'pecho' },
+    { key: 'milk', type: 'seg', label: 'Milk', options: [['materna', 'Breast milk'], ['formula', 'Formula']], show: (d) => d.method === 'biberon' },
+    { key: 'ml', type: 'num', label: 'Amount', unit: 'vol', show: (d) => d.method === 'biberon', quick: () => (US() ? [1, 2, 3, 4, 5, 6] : [30, 60, 90, 120, 150, 180]) },
+    { key: 'food', type: 'text', label: 'What did the baby eat?', placeholder: 'e.g. carrot purée', show: (d) => d.method === 'solidos' },
     { type: 'duration', show: (d) => d.method === 'pecho', quick: [5, 10, 15, 20, 30] },
   ],
   diaper: [
-    { key: 'type', type: 'seg', label: 'Tipo', options: Object.entries(DIAPER) },
+    { key: 'type', type: 'seg', label: 'Type', options: Object.entries(DIAPER) },
     { key: 'color', type: 'color', label: 'Color', show: isPoop },
-    { key: 'texture', type: 'seg', label: 'Consistencia', options: opts(TEXTURE), show: isPoop },
+    { key: 'texture', type: 'seg', label: 'Texture', options: opts(TEXTURE), show: isPoop },
   ],
   sleep: [{ type: 'duration', quick: [30, 60, 90, 120, 180] }],
   growth: [
-    { key: 'kg', type: 'num', label: 'Peso', unit: 'wt', step: '0.01' },
-    { key: 'cm', type: 'num', label: 'Talla', unit: 'len', step: '0.1' },
-    { key: 'head', type: 'num', label: 'Perímetro cefálico', unit: 'len', step: '0.1' },
+    { key: 'kg', type: 'num', label: 'Weight', unit: 'wt', step: '0.01' },
+    { key: 'cm', type: 'num', label: 'Length', unit: 'len', step: '0.1' },
+    { key: 'head', type: 'num', label: 'Head circumference', unit: 'len', step: '0.1' },
   ],
   med: [
-    { key: 'name', type: 'text', label: 'Medicina / vitamina', placeholder: 'Ej. Vitamina D', list: 'med-names' },
-    { key: 'dose', type: 'text', label: 'Dosis', placeholder: 'Ej. 1 gota, 2.5 ml' },
+    { key: 'name', type: 'text', label: 'Medicine / vitamin', placeholder: 'e.g. Vitamin D', list: 'med-names' },
+    { key: 'dose', type: 'text', label: 'Dose', placeholder: 'e.g. 1 drop, 2.5 ml' },
   ],
   temp: [
-    { key: 'c', type: 'num', label: 'Temperatura', unit: 'temp', step: '0.1' },
-    { key: 'method', type: 'seg', label: 'Cómo se midió', options: opts(TEMP_METHOD) },
+    { key: 'c', type: 'num', label: 'Temperature', unit: 'temp', step: '0.1' },
+    { key: 'method', type: 'seg', label: 'How it was measured', options: opts(TEMP_METHOD) },
   ],
-  note: [{ key: 'topic', type: 'seg', label: 'Tema', options: Object.entries(TOPIC) }],
+  note: [{ key: 'topic', type: 'seg', label: 'Topic', options: Object.entries(TOPIC) }],
 };
 
 // ======================= API =======================
@@ -208,7 +209,7 @@ async function api(method, url, body) {
   }
   const res = await fetch(url, opt);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Algo salió mal');
+  if (!res.ok) throw new Error(data.error || 'Something went wrong');
   return data;
 }
 
@@ -241,16 +242,16 @@ function describe(e) {
   switch (e.kind) {
     case 'feeding':
       if (d.method === 'pecho') {
-        const side = SIDE[d.side] ? ' ' + SIDE[d.side] : '';
-        if (isRunning(e)) return `Pecho${side} (en curso)`;
-        return `Pecho${side}${dur ? ' · ' + fmtDur(dur) : ''}`;
+        const label = SIDE[d.side] ? `${SIDE[d.side]} breast` : 'Breastfeeding';
+        if (isRunning(e)) return `${label} (in progress)`;
+        return `${label}${dur ? ' · ' + fmtDur(dur) : ''}`;
       }
       if (d.method === 'biberon') {
-        return `Biberón${MILK[d.milk] ? ' de ' + MILK[d.milk] : ''}${d.ml ? ' · ' + fmtU('vol', d.ml) : ''}`;
+        return `Bottle${MILK[d.milk] ? ' of ' + MILK[d.milk] : ''}${d.ml ? ' · ' + fmtU('vol', d.ml) : ''}`;
       }
-      return `Sólidos${d.food ? ': ' + d.food : ''}`;
+      return `Solids${d.food ? ': ' + d.food : ''}`;
     case 'diaper': {
-      let s = DIAPER[d.type] || 'Pañal';
+      let s = DIAPER[d.type] || 'Diaper';
       if (isPoop(d)) {
         const c = POOP_COLORS.find((x) => x[0] === d.color);
         const parts = [c && c[1].toLowerCase(), TEXTURE[d.texture]].filter(Boolean);
@@ -259,21 +260,21 @@ function describe(e) {
       return s;
     }
     case 'sleep':
-      if (isRunning(e)) return 'Durmiendo…';
-      return dur ? `Durmió ${fmtDur(dur)}` : 'Sueño';
+      if (isRunning(e)) return 'Sleeping…';
+      return dur ? `Slept ${fmtDur(dur)}` : 'Sleep';
     case 'growth': {
       const p = [];
       if (d.kg) p.push(fmtU('wt', d.kg));
-      if (d.cm) p.push('talla ' + fmtU('len', d.cm));
-      if (d.head) p.push('PC ' + fmtU('len', d.head));
-      return p.join(' · ') || 'Crecimiento';
+      if (d.cm) p.push('length ' + fmtU('len', d.cm));
+      if (d.head) p.push('head ' + fmtU('len', d.head));
+      return p.join(' · ') || 'Growth';
     }
     case 'med':
-      return `${d.name || 'Medicina'}${d.dose ? ' · ' + d.dose : ''}`;
+      return `${d.name || 'Medicine'}${d.dose ? ' · ' + d.dose : ''}`;
     case 'temp':
-      return `${d.c ? fmtU('temp', d.c) : '—'}${TEMP_METHOD[d.method] ? ' (' + TEMP_METHOD[d.method] + ')' : ''}${d.c >= 38 ? ' · fiebre' : ''}`;
+      return `${d.c ? fmtU('temp', d.c) : '—'}${TEMP_METHOD[d.method] ? ' (' + TEMP_METHOD[d.method] + ')' : ''}${d.c >= 38 ? ' · fever' : ''}`;
     case 'note':
-      return TOPIC[d.topic] || 'Nota';
+      return TOPIC[d.topic] || 'Note';
     default:
       return e.kind;
   }
@@ -282,12 +283,12 @@ function describe(e) {
 function warningFor(kind, d) {
   if (kind === 'diaper' && isPoop(d)) {
     if (d.color === 'rojo' || d.color === 'blanco')
-      return '⚠️ Popó con sangre o blanca/gris: conviene consultarlo con el pediatra.';
+      return '⚠️ Bloody or white/gray poop: check with the pediatrician.';
     if (d.color === 'negro')
-      return 'Negro es normal los primeros días (meconio). Después, coméntalo con el pediatra.';
+      return 'Black is normal in the first few days (meconium). After that, mention it to the pediatrician.';
   }
   if (kind === 'temp' && d.c >= 38) {
-    return '⚠️ 38 °C (100.4 °F) o más es fiebre. En bebés menores de 3 meses, llama al pediatra de inmediato.';
+    return '⚠️ 100.4 °F (38 °C) or higher is a fever. For babies under 3 months, call the pediatrician right away.';
   }
   return '';
 }
@@ -298,13 +299,13 @@ function babyAge(birth) {
   const t = startOfDay(new Date());
   const days = Math.round((t - b) / DAY);
   if (Number.isNaN(days) || days < 0) return { text: '', milestone: false };
-  if (days === 0) return { text: '¡Nació hoy!', milestone: true };
+  if (days === 0) return { text: 'Born today!', milestone: true };
   const pl = (n, s, p) => `${n} ${n === 1 ? s : p}`;
-  if (days < 14) return { text: pl(days, 'día', 'días'), milestone: days === 7 };
+  if (days < 14) return { text: pl(days, 'day', 'days'), milestone: days === 7 };
   if (days < 84) {
     const w = Math.floor(days / 7);
     const d = days % 7;
-    return { text: pl(w, 'semana', 'semanas') + (d ? ' y ' + pl(d, 'día', 'días') : ''), milestone: d === 0 };
+    return { text: pl(w, 'week', 'weeks') + (d ? ' and ' + pl(d, 'day', 'days') : ''), milestone: d === 0 };
   }
   let m = (t.getFullYear() - b.getFullYear()) * 12 + t.getMonth() - b.getMonth();
   let anchor = new Date(b);
@@ -317,9 +318,9 @@ function babyAge(birth) {
   const d = Math.round((t - anchor) / DAY);
   if (m >= 24) {
     const y = Math.floor(m / 12);
-    return { text: pl(y, 'año', 'años') + (m % 12 ? ' y ' + pl(m % 12, 'mes', 'meses') : ''), milestone: d === 0 && m % 12 === 0 };
+    return { text: pl(y, 'year', 'years') + (m % 12 ? ' and ' + pl(m % 12, 'month', 'months') : ''), milestone: d === 0 && m % 12 === 0 };
   }
-  return { text: pl(m, 'mes', 'meses') + (d ? ' y ' + pl(d, 'día', 'días') : ''), milestone: d === 0 };
+  return { text: pl(m, 'month', 'months') + (d ? ' and ' + pl(d, 'day', 'days') : ''), milestone: d === 0 };
 }
 
 // ======================= Componentes =======================
@@ -327,7 +328,7 @@ function babyAge(birth) {
 function thumbs(ids, big) {
   if (!ids || !ids.length) return '';
   return `<div class="thumbs ${big ? 'big' : ''}">${ids
-    .map((id, i) => `<img src="/api/photos/${id}?thumb=1" loading="lazy" alt="Foto" data-act="view-photo" data-ids="${ids.join(',')}" data-idx="${i}" />`)
+    .map((id, i) => `<img src="/api/photos/${id}?thumb=1" loading="lazy" alt="Photo" data-act="view-photo" data-ids="${ids.join(',')}" data-idx="${i}" />`)
     .join('')}</div>`;
 }
 
@@ -338,8 +339,8 @@ function entryCard(e, opts = {}) {
   meta.push(opts.withDay ? `${fmtDay(new Date(e.at))}, ${fmtTime(e.at)}` : fmtTime(e.at));
   if (e.added_by) meta.push(esc(e.added_by));
   if (e.comment_count) meta.push(`💬 ${e.comment_count}`);
-  if (d.ask && !d.resolved) meta.push('<span class="pill ask">🩺 Pediatra</span>');
-  if (d.ask && d.resolved) meta.push('<span class="pill ok">✓ Revisado</span>');
+  if (d.ask && !d.resolved) meta.push('<span class="pill ask">🩺 Pediatrician</span>');
+  if (d.ask && d.resolved) meta.push('<span class="pill ok">✓ Reviewed</span>');
   const warn = (e.kind === 'temp' && d.c >= 38) || (e.kind === 'diaper' && ['rojo', 'blanco'].includes(d.color));
   return `
     <div class="entry k-${e.kind} ${isRunning(e) ? 'running' : ''} ${warn ? 'warn' : ''}" data-act="open-entry" data-id="${e.id}">
@@ -392,7 +393,7 @@ function renderTimers() {
   el.innerHTML = S.running
     .map((e) => {
       const isFeed = e.kind === 'feeding';
-      const label = isFeed ? `Pecho ${SIDE[e.data.side] || ''}` : 'Durmiendo';
+      const label = isFeed ? (SIDE[e.data.side] ? `${SIDE[e.data.side]} breast` : 'Breastfeeding') : 'Sleeping';
       return `
       <div class="timer k-${e.kind}">
         <span class="timer-icon">${KIND[e.kind].icon}</span>
@@ -400,8 +401,8 @@ function renderTimers() {
           <div class="timer-label">${esc(label)}</div>
           <div class="timer-clock" data-since="${e.at}">${fmtClock(Date.now() - new Date(e.at))}</div>
         </div>
-        ${isFeed && e.data.side !== 'ambos' ? `<button class="btn small ghost light" data-act="switch-side" data-id="${e.id}">Cambiar lado</button>` : ''}
-        <button class="btn small light" data-act="stop-timer" data-id="${e.id}">${isFeed ? 'Terminar' : 'Despertó'}</button>
+        ${isFeed && e.data.side !== 'ambos' ? `<button class="btn small ghost light" data-act="switch-side" data-id="${e.id}">Switch side</button>` : ''}
+        <button class="btn small light" data-act="stop-timer" data-id="${e.id}">${isFeed ? 'Done' : 'Woke up'}</button>
       </div>`;
     })
     .join('');
@@ -469,46 +470,46 @@ function renderHoy() {
   if (feeds24.length >= 3) avgGap = (feeds24[feeds24.length - 1] - feeds24[0]) / (feeds24.length - 1);
 
   $('#view-hoy').innerHTML = `
-    ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ El servidor no tiene base de datos (PostgreSQL): lo que registren se borrará al reiniciar. Agreguen PostgreSQL en Railway.</div>' : ''}
-    ${age.milestone && S.settings.babyName ? `<div class="banner party">🎉 ¡Hoy ${esc(S.settings.babyName)} cumple ${esc(age.text)}!</div>` : ''}
+    ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ The server has no database (PostgreSQL): anything you log will be erased when it restarts. Add PostgreSQL in Railway.</div>' : ''}
+    ${age.milestone && S.settings.babyName ? `<div class="banner party">🎉 ${esc(S.settings.babyName)} is ${esc(age.text)} old today!</div>` : ''}
 
     <div class="hero">
       <div class="hero-main">
-        <div class="hero-label">Última toma</div>
-        <div class="hero-value" ${lastFeed ? `data-ago="${lastFeed.at}"` : ''}>${lastFeed ? fmtAgo(lastFeed.at) : 'Sin registros'}</div>
-        <div class="hero-sub">${lastFeed ? `${fmtTime(lastFeed.at)} · ${esc(describe(lastFeed))}` : 'Toca un botón abajo para empezar'}</div>
-        ${avgGap ? `<div class="hero-sub">Últimas 24 h: cada ~${fmtDur(avgGap)}</div>` : ''}
+        <div class="hero-label">Last feeding</div>
+        <div class="hero-value" ${lastFeed ? `data-ago="${lastFeed.at}"` : ''}>${lastFeed ? fmtAgo(lastFeed.at) : 'Nothing logged yet'}</div>
+        <div class="hero-sub">${lastFeed ? `${fmtTime(lastFeed.at)} · ${esc(describe(lastFeed))}` : 'Tap a button below to start'}</div>
+        ${avgGap ? `<div class="hero-sub">Last 24 h: every ~${fmtDur(avgGap)}</div>` : ''}
       </div>
     </div>
 
     <div class="quick-start">
       <button class="btn primary" data-act="quick-breast" data-side="${side}" ${runningFeed ? 'disabled' : ''}>
-        ▶ Pecho ${SIDE[side]}
+        ▶ ${SIDE[side]} breast
       </button>
-      <button class="btn primary alt" data-act="quick-sleep" ${runningSleep ? 'disabled' : ''}>▶ Se durmió</button>
+      <button class="btn primary alt" data-act="quick-sleep" ${runningSleep ? 'disabled' : ''}>▶ Fell asleep</button>
     </div>
 
     <div class="actions">
-      <button data-act="new" data-kind="feeding" data-preset="biberon"><span>🍼</span>Biberón</button>
-      <button data-act="new" data-kind="feeding"><span>🤱</span>Toma</button>
-      <button data-act="new" data-kind="diaper"><span>🧷</span>Pañal</button>
-      <button data-act="new" data-kind="sleep"><span>😴</span>Sueño</button>
-      <button data-act="new" data-kind="note"><span>📷</span>Foto / nota</button>
-      <button data-act="new" data-kind="med"><span>💊</span>Medicina</button>
+      <button data-act="new" data-kind="feeding" data-preset="biberon"><span>🍼</span>Bottle</button>
+      <button data-act="new" data-kind="feeding"><span>🤱</span>Feeding</button>
+      <button data-act="new" data-kind="diaper"><span>🧷</span>Diaper</button>
+      <button data-act="new" data-kind="sleep"><span>😴</span>Sleep</button>
+      <button data-act="new" data-kind="note"><span>📷</span>Photo / note</button>
+      <button data-act="new" data-kind="med"><span>💊</span>Medicine</button>
       <button data-act="new" data-kind="temp"><span>🌡️</span>Temp.</button>
-      <button data-act="new" data-kind="growth"><span>📏</span>Peso / talla</button>
+      <button data-act="new" data-kind="growth"><span>📏</span>Weight / length</button>
     </div>
 
-    <h2 class="section">Hoy</h2>
+    <h2 class="section">Today</h2>
     <div class="stats">
-      <div class="stat"><div class="stat-value">${st.feeds}</div><div class="stat-label">tomas${st.ml ? ` · ${fmtU('vol', st.ml)}` : ''}${Math.round(st.breastMin) ? ` · ${Math.round(st.breastMin)} min pecho` : ''}</div></div>
-      <div class="stat"><div class="stat-value">${st.diapers}</div><div class="stat-label">pañales · ${st.pee} 💧 ${st.poop} 💩</div></div>
-      <div class="stat"><div class="stat-value">${fmtDur(st.sleepMs)}</div><div class="stat-label">de sueño</div></div>
-      <div class="stat"><div class="stat-value small" ${lastPoop ? `data-ago="${lastPoop.at}"` : ''}>${lastPoop ? fmtAgo(lastPoop.at) : '—'}</div><div class="stat-label">última popó${lastDiaper && lastDiaper !== lastPoop ? ` · último pañal ${fmtTime(lastDiaper.at)}` : ''}</div></div>
+      <div class="stat"><div class="stat-value">${st.feeds}</div><div class="stat-label">feedings${st.ml ? ` · ${fmtU('vol', st.ml)}` : ''}${Math.round(st.breastMin) ? ` · ${Math.round(st.breastMin)} min breast` : ''}</div></div>
+      <div class="stat"><div class="stat-value">${st.diapers}</div><div class="stat-label">diapers · ${st.pee} 💧 ${st.poop} 💩</div></div>
+      <div class="stat"><div class="stat-value">${fmtDur(st.sleepMs)}</div><div class="stat-label">of sleep</div></div>
+      <div class="stat"><div class="stat-value small" ${lastPoop ? `data-ago="${lastPoop.at}"` : ''}>${lastPoop ? fmtAgo(lastPoop.at) : '—'}</div><div class="stat-label">last poop${lastDiaper && lastDiaper !== lastPoop ? ` · last diaper ${fmtTime(lastDiaper.at)}` : ''}</div></div>
     </div>
 
     <div class="list">
-      ${st.entries.length ? st.entries.map((e) => entryCard(e)).join('') : emptyState('🌙', 'Todavía no hay nada registrado hoy.')}
+      ${st.entries.length ? st.entries.map((e) => entryCard(e)).join('') : emptyState('🌙', 'Nothing logged today yet.')}
     </div>`;
 }
 
@@ -538,7 +539,7 @@ function renderHistorial() {
   const st = dayStats(S.hist.entries, day, addDays(day, 1));
   const f = S.hist.filter;
   const list = S.hist.entries.filter((e) => (f === 'all' ? true : f === 'photos' ? e.photos.length : e.kind === f));
-  const chips = [['all', 'Todo'], ...Object.entries(KIND).map(([k, v]) => [k, v.icon + ' ' + v.label]), ['photos', '🖼️ Con fotos']];
+  const chips = [['all', 'All'], ...Object.entries(KIND).map(([k, v]) => [k, v.icon + ' ' + v.label]), ['photos', '🖼️ With photos']];
   $('#view-historial').innerHTML = `
     <div class="daynav">
       <button class="icon-btn" data-act="hist-day" data-delta="-1">‹</button>
@@ -550,14 +551,14 @@ function renderHistorial() {
       <button class="icon-btn" data-act="hist-day" data-delta="1" ${isToday ? 'disabled' : ''}>›</button>
     </div>
     <div class="stats compact">
-      <div class="stat"><div class="stat-value">${st.feeds}</div><div class="stat-label">tomas${st.ml ? ` · ${fmtU('vol', st.ml)}` : ''}</div></div>
+      <div class="stat"><div class="stat-value">${st.feeds}</div><div class="stat-label">feedings${st.ml ? ` · ${fmtU('vol', st.ml)}` : ''}</div></div>
       <div class="stat"><div class="stat-value">${st.diapers}</div><div class="stat-label">${st.pee} 💧 ${st.poop} 💩</div></div>
-      <div class="stat"><div class="stat-value">${fmtDur(st.sleepMs)}</div><div class="stat-label">sueño</div></div>
+      <div class="stat"><div class="stat-value">${fmtDur(st.sleepMs)}</div><div class="stat-label">sleep</div></div>
     </div>
     <div class="chips">${chips
       .map(([k, l]) => `<button class="chip ${f === k ? 'active' : ''}" data-act="hist-filter" data-f="${k}">${l}</button>`)
       .join('')}</div>
-    <div class="list">${list.length ? list.map((e) => entryCard(e)).join('') : emptyState('📭', 'No hay registros para este día.')}</div>`;
+    <div class="list">${list.length ? list.map((e) => entryCard(e)).join('') : emptyState('📭', 'Nothing logged on this day.')}</div>`;
 }
 
 // ---------- Pediatra ----------
@@ -593,7 +594,7 @@ function growthChart(growth, key, unitKind) {
   const y = (v) => H - P - ((v - v0) / (v1 - v0)) * (H - 2 * P);
   const path = pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   return `
-    <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica">
+    <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Chart">
       <line x1="${P}" y1="${H - P}" x2="${W - P}" y2="${H - P}" class="axis" />
       <path d="${path}" class="line" />
       ${pts.map((p) => `<circle cx="${x(p.t).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="3.5" class="dot" />`).join('')}
@@ -614,27 +615,27 @@ function renderPediatra() {
 
   $('#view-pediatra').innerHTML = `
     <div class="row gap">
-      <button class="btn primary grow" data-act="new" data-kind="note">＋ Pregunta o foto</button>
-      <button class="btn grow" data-act="open-report">📄 Reporte para la cita</button>
+      <button class="btn primary grow" data-act="new" data-kind="note">＋ Question or photo</button>
+      <button class="btn grow" data-act="open-report">📄 Report for the visit</button>
     </div>
 
-    <h2 class="section">Para preguntar (${pending.length})</h2>
-    <p class="muted small">Cualquier registro marcado con “🩺 Preguntar al pediatra” aparece aquí. Al terminar la cita, márquenlo como revisado.</p>
-    <div class="list">${pending.length ? pending.map((e) => entryCard(e, { withDay: true, bigThumbs: true })).join('') : emptyState('✅', 'Nada pendiente por ahora.')}</div>
+    <h2 class="section">To ask (${pending.length})</h2>
+    <p class="muted small">Anything marked “🩺 Ask the pediatrician” shows up here. After the visit, mark it as reviewed.</p>
+    <div class="list">${pending.length ? pending.map((e) => entryCard(e, { withDay: true, bigThumbs: true })).join('') : emptyState('✅', 'Nothing pending right now.')}</div>
 
-    <h2 class="section">Crecimiento</h2>
+    <h2 class="section">Growth</h2>
     <div class="stats compact">
-      <div class="stat"><div class="stat-value">${lw ? fmtU('wt', lw.data.kg) : '—'}</div><div class="stat-label">peso${lw ? ' · ' + fmtDate(lw.at, { day: 'numeric', month: 'short' }) : ''}</div></div>
-      <div class="stat"><div class="stat-value">${lc ? fmtU('len', lc.data.cm) : '—'}</div><div class="stat-label">talla</div></div>
-      <div class="stat"><div class="stat-value">${lh ? fmtU('len', lh.data.head) : '—'}</div><div class="stat-label">perímetro cefálico</div></div>
+      <div class="stat"><div class="stat-value">${lw ? fmtU('wt', lw.data.kg) : '—'}</div><div class="stat-label">weight${lw ? ' · ' + fmtDate(lw.at, { day: 'numeric', month: 'short' }) : ''}</div></div>
+      <div class="stat"><div class="stat-value">${lc ? fmtU('len', lc.data.cm) : '—'}</div><div class="stat-label">length</div></div>
+      <div class="stat"><div class="stat-value">${lh ? fmtU('len', lh.data.head) : '—'}</div><div class="stat-label">head circumference</div></div>
     </div>
     ${growthChart(g, 'kg', 'wt')}
-    <button class="btn block" data-act="new" data-kind="growth">＋ Registrar peso / talla</button>
+    <button class="btn block" data-act="new" data-kind="growth">＋ Log weight / length</button>
     ${g.length ? `<div class="list">${g.map((e) => entryCard(e, { withDay: true })).join('')}</div>` : ''}
 
     ${
       resolved.length
-        ? `<h2 class="section clickable" data-act="toggle-resolved">${S.ped.showResolved ? '▾' : '▸'} Ya revisadas (${resolved.length})</h2>
+        ? `<h2 class="section clickable" data-act="toggle-resolved">${S.ped.showResolved ? '▾' : '▸'} Already reviewed (${resolved.length})</h2>
            ${S.ped.showResolved ? `<div class="list">${resolved.map((e) => entryCard(e, { withDay: true })).join('')}</div>` : ''}`
         : ''
     }`;
@@ -673,7 +674,7 @@ function renderReporte() {
   const temps = R.entries.filter((e) => e.kind === 'temp');
   const meds = {};
   for (const e of R.entries.filter((x) => x.kind === 'med')) {
-    const k = e.data.name || 'Medicina';
+    const k = e.data.name || 'Medicine';
     meds[k] = (meds[k] || 0) + 1;
   }
   const solids = R.entries.filter((e) => e.kind === 'feeding' && e.data.method === 'solidos' && e.data.food);
@@ -685,31 +686,31 @@ function renderReporte() {
 
   $('#view-reporte').innerHTML = `
     <div class="row gap no-print">
-      <button class="btn" data-act="back-pediatra">‹ Volver</button>
-      <button class="btn primary grow" data-act="print">🖨️ Imprimir / PDF</button>
+      <button class="btn" data-act="back-pediatra">‹ Back</button>
+      <button class="btn primary grow" data-act="print">🖨️ Print / PDF</button>
     </div>
     <select id="report-days" class="no-print">
-      ${[3, 7, 14, 30].map((d) => `<option value="${d}" ${d === R.days ? 'selected' : ''}>Últimos ${d} días</option>`).join('')}
+      ${[3, 7, 14, 30].map((d) => `<option value="${d}" ${d === R.days ? 'selected' : ''}>Last ${d} days</option>`).join('')}
     </select>
 
     <article class="report">
-      <h1>${esc(S.settings.babyName || 'Bebé')}</h1>
-      <p class="muted">${age ? esc(age) + ' · ' : ''}${S.settings.birthDate ? 'Nació el ' + esc(fmtDate(S.settings.birthDate + 'T00:00:00', { day: 'numeric', month: 'long', year: 'numeric' })) + ' · ' : ''}
-        Del ${esc(fmtDate(R.from, { day: 'numeric', month: 'short' }))} al ${esc(fmtDate(addDays(R.to, -1), { day: 'numeric', month: 'short', year: 'numeric' }))}</p>
+      <h1>${esc(S.settings.babyName || 'Baby')}</h1>
+      <p class="muted">${age ? esc(age) + ' · ' : ''}${S.settings.birthDate ? 'Born ' + esc(fmtDate(S.settings.birthDate + 'T00:00:00', { day: 'numeric', month: 'long', year: 'numeric' })) + ' · ' : ''}
+        ${esc(fmtDate(R.from, { day: 'numeric', month: 'short' }))} – ${esc(fmtDate(addDays(R.to, -1), { day: 'numeric', month: 'short', year: 'numeric' }))}</p>
 
-      <h2>Promedio por día</h2>
+      <h2>Daily average</h2>
       <div class="stats compact">
-        <div class="stat"><div class="stat-value">${r1(sum('feeds') / n)}</div><div class="stat-label">tomas</div></div>
-        <div class="stat"><div class="stat-value">${sum('ml') ? fmtU('vol', sum('ml') / n) : '—'}</div><div class="stat-label">biberón</div></div>
-        <div class="stat"><div class="stat-value">${sum('breastMin') ? Math.round(sum('breastMin') / n) + ' min' : '—'}</div><div class="stat-label">pecho</div></div>
-        <div class="stat"><div class="stat-value">${r1(sum('pee') / n)}</div><div class="stat-label">pañales con pipí</div></div>
-        <div class="stat"><div class="stat-value">${r1(sum('poop') / n)}</div><div class="stat-label">popós</div></div>
-        <div class="stat"><div class="stat-value">${fmtDur(sum('sleepMs') / n)}</div><div class="stat-label">sueño</div></div>
+        <div class="stat"><div class="stat-value">${r1(sum('feeds') / n)}</div><div class="stat-label">feedings</div></div>
+        <div class="stat"><div class="stat-value">${sum('ml') ? fmtU('vol', sum('ml') / n) : '—'}</div><div class="stat-label">bottle</div></div>
+        <div class="stat"><div class="stat-value">${sum('breastMin') ? Math.round(sum('breastMin') / n) + ' min' : '—'}</div><div class="stat-label">breast</div></div>
+        <div class="stat"><div class="stat-value">${r1(sum('pee') / n)}</div><div class="stat-label">wet diapers</div></div>
+        <div class="stat"><div class="stat-value">${r1(sum('poop') / n)}</div><div class="stat-label">poops</div></div>
+        <div class="stat"><div class="stat-value">${fmtDur(sum('sleepMs') / n)}</div><div class="stat-label">sleep</div></div>
       </div>
 
-      <h2>Día por día</h2>
+      <h2>Day by day</h2>
       <table class="table">
-        <thead><tr><th>Día</th><th>Tomas</th><th>Biberón</th><th>Pecho</th><th>💧</th><th>💩</th><th>Sueño</th></tr></thead>
+        <thead><tr><th>Day</th><th>Feeds</th><th>Bottle</th><th>Breast</th><th>💧</th><th>💩</th><th>Sleep</th></tr></thead>
         <tbody>${days
           .map(
             (d) => `<tr><td>${esc(fmtDate(d.day, { weekday: 'short', day: 'numeric', month: 'short' }))}</td><td>${d.feeds}</td>
@@ -719,17 +720,17 @@ function renderReporte() {
           .join('')}</tbody>
       </table>
 
-      <h2>Crecimiento (último registro)</h2>
-      <p>${lw ? 'Peso: <b>' + fmtU('wt', lw.data.kg) + '</b> (' + fmtDate(lw.at, { day: 'numeric', month: 'short' }) + ')' : 'Peso: —'} ·
-         ${lc ? 'Talla: <b>' + fmtU('len', lc.data.cm) + '</b>' : 'Talla: —'} ·
-         ${lh ? 'PC: <b>' + fmtU('len', lh.data.head) + '</b>' : 'PC: —'}</p>
+      <h2>Growth (latest)</h2>
+      <p>${lw ? 'Weight: <b>' + fmtU('wt', lw.data.kg) + '</b> (' + fmtDate(lw.at, { day: 'numeric', month: 'short' }) + ')' : 'Weight: —'} ·
+         ${lc ? 'Length: <b>' + fmtU('len', lc.data.cm) + '</b>' : 'Length: —'} ·
+         ${lh ? 'Head: <b>' + fmtU('len', lh.data.head) + '</b>' : 'Head: —'}</p>
       ${growthChart(R.growth, 'kg', 'wt')}
 
-      ${temps.length ? `<h2>Temperaturas</h2><ul>${temps.map((e) => `<li class="${e.data.c >= 38 ? 'danger' : ''}">${esc(fmtDate(e.at, { day: 'numeric', month: 'short' }))} ${fmtTime(e.at)} — ${esc(describe(e))}</li>`).join('')}</ul>` : ''}
-      ${Object.keys(meds).length ? `<h2>Medicinas / vitaminas</h2><ul>${Object.entries(meds).map(([k, v]) => `<li>${esc(k)}: ${v} ${v === 1 ? 'vez' : 'veces'}</li>`).join('')}</ul>` : ''}
-      ${solids.length ? `<h2>Alimentos sólidos</h2><p>${esc([...new Set(solids.map((e) => e.data.food))].join(', '))}</p>` : ''}
+      ${temps.length ? `<h2>Temperatures</h2><ul>${temps.map((e) => `<li class="${e.data.c >= 38 ? 'danger' : ''}">${esc(fmtDate(e.at, { day: 'numeric', month: 'short' }))} ${fmtTime(e.at)} — ${esc(describe(e))}</li>`).join('')}</ul>` : ''}
+      ${Object.keys(meds).length ? `<h2>Medicines / vitamins</h2><ul>${Object.entries(meds).map(([k, v]) => `<li>${esc(k)}: ${v} ${v === 1 ? 'time' : 'times'}</li>`).join('')}</ul>` : ''}
+      ${solids.length ? `<h2>Solid foods</h2><p>${esc([...new Set(solids.map((e) => e.data.food))].join(', '))}</p>` : ''}
 
-      <h2>Preguntas y observaciones (${R.details.length})</h2>
+      <h2>Questions & observations (${R.details.length})</h2>
       ${
         R.details.length
           ? R.details
@@ -738,12 +739,12 @@ function renderReporte() {
         <div class="report-item">
           <div class="report-item-title">${KIND[e.kind].icon} ${esc(describe(e))} <span class="muted">— ${esc(fmtDate(e.at, { day: 'numeric', month: 'short' }))} ${fmtTime(e.at)}${e.added_by ? ' · ' + esc(e.added_by) : ''}</span></div>
           ${e.notes ? `<p>${esc(e.notes)}</p>` : ''}
-          ${e.photos.length ? `<div class="report-photos">${e.photos.map((id) => `<img src="/api/photos/${id}" alt="Foto" />`).join('')}</div>` : ''}
+          ${e.photos.length ? `<div class="report-photos">${e.photos.map((id) => `<img src="/api/photos/${id}" alt="Photo" />`).join('')}</div>` : ''}
           ${e.comments.length ? `<ul class="report-comments">${e.comments.map((c) => `<li><b>${esc(c.author || '—')}:</b> ${esc(c.text)}</li>`).join('')}</ul>` : ''}
         </div>`
               )
               .join('')
-          : '<p class="muted">Sin preguntas pendientes.</p>'
+          : '<p class="muted">No pending questions.</p>'
       }
     </article>`;
 }
@@ -751,7 +752,7 @@ function renderReporte() {
 // ---------- Gastos ----------
 
 const money = (n) =>
-  `${S.settings.currency || '$'}${Number(n).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  `${S.settings.currency || '$'}${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 async function loadGastos() {
   S.exp.list = await api('GET', '/api/expenses');
@@ -786,17 +787,17 @@ function renderGastos() {
 
     <div class="hero money">
       <div class="hero-main">
-        <div class="hero-label">Gastado este mes</div>
+        <div class="hero-label">Spent this month</div>
         <div class="hero-value">${money(total)}</div>
-        <div class="hero-sub">Total desde el inicio: ${money(all)}${months.size > 1 ? ` · promedio ${money(avg)}/mes` : ''}</div>
+        <div class="hero-sub">All-time total: ${money(all)}${months.size > 1 ? ` · average ${money(avg)}/month` : ''}</div>
       </div>
     </div>
 
-    <button class="btn primary block" data-act="new-expense">＋ Agregar gasto</button>
+    <button class="btn primary block" data-act="new-expense">＋ Add expense</button>
 
     ${
       cats.length
-        ? `<h2 class="section">Por categoría</h2>
+        ? `<h2 class="section">By category</h2>
       <div class="bars">${cats
         .map(
           ([c, v]) => `<div class="bar-row">
@@ -806,14 +807,14 @@ function renderGastos() {
           </div>`
         )
         .join('')}</div>
-      <h2 class="section">Quién pagó</h2>
+      <h2 class="section">Who paid</h2>
       <div class="stats compact">${Object.entries(byWho)
         .map(([w, v]) => `<div class="stat"><div class="stat-value small">${money(v)}</div><div class="stat-label">${esc(w)}</div></div>`)
         .join('')}</div>`
         : ''
     }
 
-    <h2 class="section">Movimientos</h2>
+    <h2 class="section">Transactions</h2>
     <div class="list">${
       list.length
         ? list
@@ -821,27 +822,27 @@ function renderGastos() {
               (x) => `<div class="entry expense" data-act="edit-expense" data-id="${x.id}">
             <div class="entry-icon">${CATS[x.category]?.[1] || '📦'}</div>
             <div class="entry-main">
-              <div class="entry-title">${esc(x.description || CATS[x.category]?.[0] || 'Gasto')}</div>
+              <div class="entry-title">${esc(x.description || CATS[x.category]?.[0] || 'Expense')}</div>
               <div class="entry-sub">${esc(fmtDate(x.spent_on + 'T00:00:00', { weekday: 'short', day: 'numeric', month: 'short' }))}${x.paid_by ? ' · ' + esc(x.paid_by) : ''}</div>
             </div>
             <div class="entry-amount">${money(x.amount)}</div>
           </div>`
             )
             .join('')
-        : emptyState('🧾', 'Sin gastos este mes.')
+        : emptyState('🧾', 'No expenses this month.')
     }</div>
-    ${S.exp.list.length ? '<button class="btn ghost block" data-act="export-expenses">⬇️ Exportar todos los gastos (CSV)</button>' : ''}`;
+    ${S.exp.list.length ? '<button class="btn ghost block" data-act="export-expenses">⬇️ Export all expenses (CSV)</button>' : ''}`;
 }
 
 function exportExpenses() {
-  const rows = [['Fecha', 'Categoría', 'Descripción', 'Monto', 'Pagó']];
+  const rows = [['Date', 'Category', 'Description', 'Amount', 'Paid by']];
   for (const x of [...S.exp.list].reverse()) {
     rows.push([x.spent_on, CATS[x.category]?.[0] || x.category, x.description || '', x.amount.toFixed(2), x.paid_by || '']);
   }
   const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
-  a.download = `gastos-ma8ko-${ymd(new Date())}.csv`;
+  a.download = `ma8ko-expenses-${ymd(new Date())}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1003,15 +1004,15 @@ function fieldHtml(f) {
   }
   if (f.type === 'duration') {
     if (F.running) {
-      return `<div class="field"><span>Duración</span><div class="banner">⏱️ En curso desde las ${fmtTime(F.at.toISOString())}. Termínalo desde la barra de arriba.</div></div>`;
+      return `<div class="field"><span>Duration</span><div class="banner">⏱️ In progress since ${fmtTime(F.at.toISOString())}. Stop it from the bar at the top.</div></div>`;
     }
     const seg = !F.entry
-      ? `<div class="seg"><button type="button" class="${F.mode === 'timer' ? 'active' : ''}" data-act="mode" data-val="timer">⏱️ Cronómetro (empieza ya)</button>
-         <button type="button" class="${F.mode === 'manual' ? 'active' : ''}" data-act="mode" data-val="manual">✍️ Ya pasó</button></div>`
+      ? `<div class="seg"><button type="button" class="${F.mode === 'timer' ? 'active' : ''}" data-act="mode" data-val="timer">⏱️ Timer (starts now)</button>
+         <button type="button" class="${F.mode === 'manual' ? 'active' : ''}" data-act="mode" data-val="manual">✍️ Already happened</button></div>`
       : '';
-    if (F.mode === 'timer') return `<div class="field"><span>Duración</span>${seg}</div>`;
-    return `<div class="field"><span>Duración</span>${seg}
-      <label class="inline"><input type="number" inputmode="numeric" min="0" step="1" data-k="__minutes" value="${esc(F.minutes)}" /> minutos</label>
+    if (F.mode === 'timer') return `<div class="field"><span>Duration</span>${seg}</div>`;
+    return `<div class="field"><span>Duration</span>${seg}
+      <label class="inline"><input type="number" inputmode="numeric" min="0" step="1" data-k="__minutes" value="${esc(F.minutes)}" /> minutes</label>
       <div class="quick">${f.quick.map((q) => `<button type="button" class="chip" data-act="quick-min" data-val="${q}">${q < 60 ? q + ' min' : fmtDur(q * MIN)}</button>`).join('')}</div>
     </div>`;
   }
@@ -1028,8 +1029,8 @@ function renderForm() {
 
   $('#sheet-body').innerHTML = `
     <div class="sheet-head">
-      <h2>${k.icon} ${F.entry ? 'Editar' : 'Nuevo'}: ${k.label}</h2>
-      <button class="icon-btn" data-act="close-sheet" aria-label="Cerrar">✕</button>
+      <h2>${k.icon} ${F.entry ? 'Edit' : 'New'}: ${k.label}</h2>
+      <button class="icon-btn" data-act="close-sheet" aria-label="Close">✕</button>
     </div>
     <form id="entry-form" class="form">
       ${fields.map(fieldHtml).join('')}
@@ -1037,24 +1038,24 @@ function renderForm() {
       ${
         timerNew
           ? ''
-          : `<label class="field"><span>${hasDuration(F.kind, F.data) ? 'Empezó' : 'Fecha y hora'}</span>
+          : `<label class="field"><span>${hasDuration(F.kind, F.data) ? 'Started' : 'Date & time'}</span>
               <input type="datetime-local" data-k="__at" value="${toLocalInput(F.at)}" max="${toLocalInput(new Date(Date.now() + DAY))}" /></label>`
       }
-      <label class="field"><span>Notas${F.kind === 'note' ? ' (¿qué quieres preguntar o recordar?)' : ''}</span>
-        <textarea data-k="__notes" rows="${F.kind === 'note' ? 4 : 2}" maxlength="4000" placeholder="Opcional">${esc(F.notes)}</textarea></label>
+      <label class="field"><span>Notes${F.kind === 'note' ? ' (what do you want to ask or remember?)' : ''}</span>
+        <textarea data-k="__notes" rows="${F.kind === 'note' ? 4 : 2}" maxlength="4000" placeholder="Optional">${esc(F.notes)}</textarea></label>
 
-      <div class="field"><span>Fotos</span>
+      <div class="field"><span>Photos</span>
         <div class="thumbs edit">
-          ${existing.map((id) => `<img src="/api/photos/${id}?thumb=1" alt="Foto" />`).join('')}
-          ${F.newPhotos.map((p, i) => `<div class="new-photo">${p.preview ? `<img src="${p.preview}" alt="Nueva foto" />` : '<div class="no-preview">📷</div>'}<button type="button" data-act="remove-new-photo" data-idx="${i}">✕</button></div>`).join('')}
-          <button type="button" class="add-photo" data-act="pick-photos">＋<small>Foto</small></button>
+          ${existing.map((id) => `<img src="/api/photos/${id}?thumb=1" alt="Photo" />`).join('')}
+          ${F.newPhotos.map((p, i) => `<div class="new-photo">${p.preview ? `<img src="${p.preview}" alt="New photo" />` : '<div class="no-preview">📷</div>'}<button type="button" data-act="remove-new-photo" data-idx="${i}">✕</button></div>`).join('')}
+          <button type="button" class="add-photo" data-act="pick-photos">＋<small>Photo</small></button>
         </div>
       </div>
 
-      <label class="check"><input type="checkbox" data-k="__ask" ${F.data.ask ? 'checked' : ''} /> 🩺 Preguntar al pediatra</label>
+      <label class="check"><input type="checkbox" data-k="__ask" ${F.data.ask ? 'checked' : ''} /> 🩺 Ask the pediatrician</label>
 
       <button class="btn primary block" type="submit" ${F.saving ? 'disabled' : ''}>
-        ${F.saving ? esc(F.saving) : timerNew ? '▶ Iniciar' : 'Guardar'}
+        ${F.saving ? esc(F.saving) : timerNew ? '▶ Start' : 'Save'}
       </button>
       <datalist id="med-names">${medNames.map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
     </form>`;
@@ -1101,7 +1102,7 @@ async function saveForm() {
     if (f.type === 'num') {
       if (v === '' || v === undefined || v === null) continue;
       v = Number(v);
-      if (!Number.isFinite(v) || v < 0) return toast(`Revisa “${f.label}”`, true);
+      if (!Number.isFinite(v) || v < 0) return toast(`Check “${f.label}”`, true);
       v = r2(UNITS[f.unit].parse(v));
     } else if (typeof v === 'string') {
       v = v.trim();
@@ -1115,11 +1116,11 @@ async function saveForm() {
   if (F.data.timer) data.timer = true;
 
   // Validaciones mínimas.
-  if (kind === 'growth' && !data.kg && !data.cm && !data.head) return toast('Escribe al menos el peso o la talla', true);
-  if (kind === 'med' && !data.name) return toast('¿Qué medicina?', true);
-  if (kind === 'temp' && !data.c) return toast('Escribe la temperatura', true);
+  if (kind === 'growth' && !data.kg && !data.cm && !data.head) return toast('Enter at least the weight or length', true);
+  if (kind === 'med' && !data.name) return toast('Which medicine?', true);
+  if (kind === 'temp' && !data.c) return toast('Enter the temperature', true);
   if (kind === 'note' && !F.notes.trim() && !F.newPhotos.length && !F.entry?.photos.length) {
-    return toast('Agrega una foto o escribe una nota', true);
+    return toast('Add a photo or write a note', true);
   }
 
   const withDur = hasDuration(kind, data);
@@ -1139,9 +1140,9 @@ async function saveForm() {
       delete body.data.timer;
     }
   }
-  const doneMsg = !F.entry && body.data.timer ? '⏱️ Cronómetro iniciado' : '✓ Guardado';
+  const doneMsg = !F.entry && body.data.timer ? '⏱️ Timer started' : '✓ Saved';
 
-  F.saving = 'Guardando…';
+  F.saving = 'Saving…';
   renderForm();
   try {
     let entry;
@@ -1149,7 +1150,7 @@ async function saveForm() {
     else entry = await api('POST', '/api/entries', { ...body, kind, addedBy: S.me });
     await uploadPhotos(entry.id, F.newPhotos, (i, n) => {
       if (F) {
-        F.saving = `Subiendo foto ${i}/${n}…`;
+        F.saving = `Uploading photo ${i}/${n}…`;
         renderForm();
       }
     });
@@ -1200,7 +1201,7 @@ async function processImage(file) {
     return { mime: 'image/jpeg', data: full.split(',')[1], thumb: thumb.split(',')[1], preview: thumb };
   } catch {
     // El navegador no puede leerla (p. ej. HEIC fuera de Safari): se sube tal cual.
-    if (file.size > 14 * 1024 * 1024) throw new Error('La foto es demasiado grande');
+    if (file.size > 14 * 1024 * 1024) throw new Error('The photo is too large');
     return { mime: file.type || 'image/jpeg', data: await blobToBase64(file), thumb: null, preview: null };
   } finally {
     URL.revokeObjectURL(url);
@@ -1247,7 +1248,7 @@ function showViewerPhoto() {
   const src = `/api/photos/${ids[idx]}`;
   $('#viewer-img').src = src;
   $('#viewer-download').href = src;
-  $('#viewer-download').setAttribute('download', `ma8ko-foto-${ids[idx]}.jpg`);
+  $('#viewer-download').setAttribute('download', `ma8ko-photo-${ids[idx]}.jpg`);
   $('#viewer-prev').classList.toggle('invisible', idx === 0);
   $('#viewer-next').classList.toggle('invisible', idx >= ids.length - 1);
 }
@@ -1273,30 +1274,30 @@ function renderDetail(e) {
   const html = `
     <div class="sheet-head">
       <h2>${k.icon} ${k.label}</h2>
-      <button class="icon-btn" data-act="close-sheet" aria-label="Cerrar">✕</button>
+      <button class="icon-btn" data-act="close-sheet" aria-label="Close">✕</button>
     </div>
     <div class="detail">
       <div class="detail-title">${esc(describe(e))}</div>
-      <div class="muted">${esc(fmtDay(new Date(e.at)))}, ${fmtTime(e.at)}${e.ended_at ? ' – ' + fmtTime(e.ended_at) : ''}${dur ? ' (' + fmtDur(dur) + ')' : ''}${e.added_by ? ' · por ' + esc(e.added_by) : ''}</div>
-      ${isRunning(e) ? `<div class="banner">⏱️ En curso: <b data-since="${e.at}">${fmtClock(Date.now() - new Date(e.at))}</b> <button class="btn small" data-act="stop-timer" data-id="${e.id}">Terminar ahora</button></div>` : ''}
+      <div class="muted">${esc(fmtDay(new Date(e.at)))}, ${fmtTime(e.at)}${e.ended_at ? ' – ' + fmtTime(e.ended_at) : ''}${dur ? ' (' + fmtDur(dur) + ')' : ''}${e.added_by ? ' · by ' + esc(e.added_by) : ''}</div>
+      ${isRunning(e) ? `<div class="banner">⏱️ In progress: <b data-since="${e.at}">${fmtClock(Date.now() - new Date(e.at))}</b> <button class="btn small" data-act="stop-timer" data-id="${e.id}">Stop now</button></div>` : ''}
       ${warn ? `<div class="banner warn">${esc(warn)}</div>` : ''}
       ${e.notes ? `<p class="detail-notes">${esc(e.notes)}</p>` : ''}
 
       ${thumbs(e.photos, true)}
-      <button class="btn ghost small" data-act="detail-add-photo">📷 Agregar foto</button>
+      <button class="btn ghost small" data-act="detail-add-photo">📷 Add photo</button>
 
       <div class="row gap wrap">
         ${
           d.ask
             ? d.resolved
-              ? `<button class="btn small" data-act="ask" data-v="reopen">↺ Volver a pendiente</button>`
-              : `<button class="btn small primary" data-act="ask" data-v="resolve">✓ Ya lo vimos con el pediatra</button>
-                 <button class="btn small ghost" data-act="ask" data-v="off">Quitar de pediatra</button>`
-            : `<button class="btn small" data-act="ask" data-v="on">🩺 Preguntar al pediatra</button>`
+              ? `<button class="btn small" data-act="ask" data-v="reopen">↺ Back to pending</button>`
+              : `<button class="btn small primary" data-act="ask" data-v="resolve">✓ Reviewed with the pediatrician</button>
+                 <button class="btn small ghost" data-act="ask" data-v="off">Remove from pediatrician list</button>`
+            : `<button class="btn small" data-act="ask" data-v="on">🩺 Ask the pediatrician</button>`
         }
       </div>
 
-      <h3>Comentarios</h3>
+      <h3>Comments</h3>
       <div class="comments">
         ${
           e.comments.length
@@ -1304,20 +1305,20 @@ function renderDetail(e) {
                 .map(
                   (c) => `<div class="comment ${c.author === S.me ? 'mine' : ''}">
               <div class="comment-meta"><b>${esc(c.author || '—')}</b> · ${esc(fmtDay(new Date(c.created_at)))} ${fmtTime(c.created_at)}${
-                c.author === S.me ? ` <button class="link danger" data-act="del-comment" data-id="${c.id}">borrar</button>` : ''}</div><div class="comment-text">${esc(c.text)}</div></div>`
+                c.author === S.me ? ` <button class="link danger" data-act="del-comment" data-id="${c.id}">delete</button>` : ''}</div><div class="comment-text">${esc(c.text)}</div></div>`
                 )
                 .join('')
-            : '<p class="muted small">Aún no hay comentarios.</p>'
+            : '<p class="muted small">No comments yet.</p>'
         }
       </div>
       <form id="comment-form" class="row gap">
-        <input id="comment-text" class="grow" placeholder="Escribe un comentario…" maxlength="2000" autocomplete="off" />
-        <button class="btn primary" type="submit">Enviar</button>
+        <input id="comment-text" class="grow" placeholder="Write a comment…" maxlength="2000" autocomplete="off" />
+        <button class="btn primary" type="submit">Send</button>
       </form>
 
       <div class="row gap sheet-foot">
-        <button class="btn grow" data-act="edit-entry">✏️ Editar</button>
-        <button class="btn danger grow" data-act="delete-entry">🗑️ Borrar</button>
+        <button class="btn grow" data-act="edit-entry">✏️ Edit</button>
+        <button class="btn danger grow" data-act="delete-entry">🗑️ Delete</button>
       </div>
     </div>`;
   const wasOpen = !$('#sheet').classList.contains('hidden');
@@ -1337,7 +1338,7 @@ async function setAsk(v) {
   } else if (v === 'resolve') data.resolved = true;
   else if (v === 'reopen') delete data.resolved;
   renderDetail(await api('PATCH', '/api/entries/' + e.id, { data }));
-  toast(v === 'resolve' ? '✓ Marcado como revisado' : '✓ Listo');
+  toast(v === 'resolve' ? '✓ Marked as reviewed' : '✓ Done');
   refresh();
 }
 
@@ -1352,13 +1353,13 @@ async function startTimer(kind, data) {
     data: { ...data, timer: true },
     addedBy: S.me,
   });
-  toast('⏱️ Cronómetro iniciado');
+  toast('⏱️ Timer started');
   await refresh();
 }
 
 async function stopTimer(id) {
   await api('PATCH', '/api/entries/' + id, { endedAt: new Date().toISOString() });
-  toast('✓ Terminado');
+  toast('✓ Stopped');
   await refresh();
 }
 
@@ -1384,24 +1385,24 @@ function renderExpenseForm() {
   const payers = [...new Set([S.me, ...S.exp.list.map((x) => x.paid_by)].filter(Boolean))];
   const html = `
     <div class="sheet-head">
-      <h2>💰 ${X.id ? 'Editar gasto' : 'Nuevo gasto'}</h2>
-      <button class="icon-btn" data-act="close-sheet" aria-label="Cerrar">✕</button>
+      <h2>💰 ${X.id ? 'Edit expense' : 'New expense'}</h2>
+      <button class="icon-btn" data-act="close-sheet" aria-label="Close">✕</button>
     </div>
     <form id="expense-form" class="form">
-      <label class="field"><span>Monto (${esc(S.settings.currency || '$')})</span>
+      <label class="field"><span>Amount (${esc(S.settings.currency || '$')})</span>
         <input type="number" inputmode="decimal" step="0.01" min="0" data-x="amount" value="${esc(X.amount)}" required /></label>
-      <div class="field"><span>Categoría</span><div class="cats">${Object.entries(CATS)
+      <div class="field"><span>Category</span><div class="cats">${Object.entries(CATS)
         .map(([k, [l, i]]) => `<button type="button" class="chip ${X.category === k ? 'active' : ''}" data-act="exp-cat" data-val="${k}">${i} ${esc(l)}</button>`)
         .join('')}</div></div>
-      <label class="field"><span>Descripción</span>
-        <input data-x="description" maxlength="200" value="${esc(X.description)}" placeholder="Ej. Pañales talla 1 (caja)" /></label>
-      <label class="field"><span>Fecha</span><input type="date" data-x="spentOn" value="${esc(X.spentOn)}" /></label>
-      <label class="field"><span>¿Quién pagó?</span>
+      <label class="field"><span>Description</span>
+        <input data-x="description" maxlength="200" value="${esc(X.description)}" placeholder="e.g. Size 1 diapers (box)" /></label>
+      <label class="field"><span>Date</span><input type="date" data-x="spentOn" value="${esc(X.spentOn)}" /></label>
+      <label class="field"><span>Who paid?</span>
         <input data-x="paidBy" maxlength="40" value="${esc(X.paidBy)}" />
         ${payers.length > 1 ? `<div class="quick">${payers.map((p) => `<button type="button" class="chip" data-act="exp-payer" data-val="${esc(p)}">${esc(p)}</button>`).join('')}</div>` : ''}
       </label>
-      <button class="btn primary block" type="submit">Guardar</button>
-      ${X.id ? '<button type="button" class="btn danger block" data-act="delete-expense">🗑️ Borrar gasto</button>' : ''}
+      <button class="btn primary block" type="submit">Save</button>
+      ${X.id ? '<button type="button" class="btn danger block" data-act="delete-expense">🗑️ Delete expense</button>' : ''}
     </form>`;
   if (S.sheet === 'expense') $('#sheet-body').innerHTML = html;
   else openSheet('expense', html);
@@ -1409,14 +1410,14 @@ function renderExpenseForm() {
 
 async function saveExpense() {
   const amount = Number(X.amount);
-  if (!(amount > 0)) return toast('Escribe el monto', true);
+  if (!(amount > 0)) return toast('Enter the amount', true);
   const body = { amount, category: X.category, description: X.description, spentOn: X.spentOn, paidBy: X.paidBy };
   try {
     if (X.id) await api('PATCH', '/api/expenses/' + X.id, body);
     else await api('POST', '/api/expenses', body);
     S.exp.month = (X.spentOn || ymd(new Date())).slice(0, 7);
     closeSheet();
-    toast('✓ Gasto guardado');
+    toast('✓ Expense saved');
     await refresh();
   } catch (err) {
     fail(err);
@@ -1431,26 +1432,26 @@ function openSettings() {
     'settings',
     `
     <div class="sheet-head">
-      <h2>⚙️ Ajustes</h2>
-      <button class="icon-btn" data-act="close-sheet" aria-label="Cerrar">✕</button>
+      <h2>⚙️ Settings</h2>
+      <button class="icon-btn" data-act="close-sheet" aria-label="Close">✕</button>
     </div>
     <form id="settings-form" class="form">
-      <label class="field"><span>Tu nombre (en este celular)</span><input id="set-me" maxlength="40" value="${esc(S.me)}" required /></label>
-      <label class="field"><span>Nombre del bebé</span><input id="set-baby" maxlength="60" value="${esc(s.babyName || '')}" /></label>
-      <label class="field"><span>Fecha de nacimiento</span><input id="set-birth" type="date" value="${esc(s.birthDate || '')}" /></label>
-      <div class="field"><span>Unidades</span>
+      <label class="field"><span>Your name (on this phone)</span><input id="set-me" maxlength="40" value="${esc(S.me)}" required /></label>
+      <label class="field"><span>Baby's name</span><input id="set-baby" maxlength="60" value="${esc(s.babyName || '')}" /></label>
+      <label class="field"><span>Date of birth</span><input id="set-birth" type="date" value="${esc(s.birthDate || '')}" /></label>
+      <div class="field"><span>Units</span>
         <div class="seg">
           <button type="button" class="${!US() ? 'active' : ''}" data-act="set-units" data-val="metric">ml · kg · cm · °C</button>
           <button type="button" class="${US() ? 'active' : ''}" data-act="set-units" data-val="us">oz · lb · in · °F</button>
         </div></div>
-      <label class="field"><span>Símbolo de moneda</span><input id="set-currency" maxlength="6" value="${esc(s.currency || '$')}" /></label>
-      <button class="btn primary block" type="submit">Guardar</button>
+      <label class="field"><span>Currency symbol</span><input id="set-currency" maxlength="6" value="${esc(s.currency || '$')}" /></label>
+      <button class="btn primary block" type="submit">Save</button>
     </form>
     <div class="settings-info">
-      ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ El servidor no tiene base de datos (PostgreSQL): los datos se borran al reiniciar.</div>' : ''}
-      <p class="muted small">📱 Tip: ábrela en Safari/Chrome y elige “Agregar a pantalla de inicio” para usarla como app.</p>
-      <p class="muted small">Comparte el link con tu pareja: ambos ven y editan lo mismo.</p>
-      <a class="btn ghost block" href="/api/backup" download>💾 Descargar respaldo de los datos</a>
+      ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ The server has no database (PostgreSQL): data is erased when it restarts.</div>' : ''}
+      <p class="muted small">📱 Tip: open it in Safari/Chrome and choose “Add to Home Screen” to use it like an app.</p>
+      <p class="muted small">Share the link with your partner: you both see and edit the same data.</p>
+      <a class="btn ghost block" href="/api/backup" download>💾 Download a backup of the data</a>
     </div>`
   );
   S.pendingUnits = s.units === 'us' ? 'us' : 'metric';
@@ -1458,7 +1459,7 @@ function openSettings() {
 
 async function saveSettingsForm() {
   const me = $('#set-me').value.trim();
-  if (!me) return toast('Escribe tu nombre', true);
+  if (!me) return toast('Enter your name', true);
   S.me = me;
   store.set('ma8ko_me', me);
   try {
@@ -1469,7 +1470,7 @@ async function saveSettingsForm() {
       units: S.pendingUnits,
     });
     closeSheet();
-    toast('✓ Ajustes guardados');
+    toast('✓ Settings saved');
     await refresh();
   } catch (err) {
     fail(err);
@@ -1528,9 +1529,9 @@ const ACTIONS = {
   'detail-add-photo': () => {
     const id = S.detail.id;
     pickPhotos(async (list) => {
-      toast('Subiendo…');
+      toast('Uploading…');
       await uploadPhotos(id, list);
-      toast('✓ Foto agregada');
+      toast('✓ Photo added');
       await refresh();
       if (S.sheet === 'detail' && S.detail?.id === id) renderDetail(await api('GET', '/api/entries/' + id));
     });
@@ -1541,11 +1542,11 @@ const ACTIONS = {
     openForm(e.kind, e);
   },
   'delete-entry': async () => {
-    if (!confirm('¿Borrar este registro con sus fotos y comentarios?')) return;
+    if (!confirm('Delete this entry along with its photos and comments?')) return;
     try {
       await api('DELETE', '/api/entries/' + S.detail.id);
       closeSheet();
-      toast('Borrado');
+      toast('Deleted');
       await refresh();
     } catch (err) {
       fail(err);
@@ -1553,7 +1554,7 @@ const ACTIONS = {
   },
   ask: (el) => setAsk(el.dataset.v).catch(fail),
   'del-comment': async (el) => {
-    if (!confirm('¿Borrar el comentario?')) return;
+    if (!confirm('Delete this comment?')) return;
     try {
       await api('DELETE', '/api/comments/' + el.dataset.id);
       renderDetail(await api('GET', '/api/entries/' + S.detail.id));
@@ -1595,11 +1596,11 @@ const ACTIONS = {
     $('[data-x="paidBy"]').value = el.dataset.val;
   },
   'delete-expense': async () => {
-    if (!confirm('¿Borrar este gasto?')) return;
+    if (!confirm('Delete this expense?')) return;
     try {
       await api('DELETE', '/api/expenses/' + X.id);
       closeSheet();
-      toast('Borrado');
+      toast('Deleted');
       await refresh();
     } catch (err) {
       fail(err);

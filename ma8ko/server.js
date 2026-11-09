@@ -124,7 +124,7 @@ app.get(
   '/api/entries/:id',
   wrap(async (req, res) => {
     const e = await db.getEntry(Number(req.params.id));
-    if (!e) return res.status(404).json({ error: 'No encontrado' });
+    if (!e) return res.status(404).json({ error: 'Not found' });
     res.json(e);
   })
 );
@@ -133,11 +133,11 @@ app.post(
   '/api/entries',
   wrap(async (req, res) => {
     const b = req.body || {};
-    if (!KINDS.includes(b.kind)) return res.status(400).json({ error: 'Tipo inválido' });
+    if (!KINDS.includes(b.kind)) return res.status(400).json({ error: 'Invalid type' });
     const at = isoOrNull(b.at);
     const endedAt = isoOrNull(b.endedAt);
     if (at === undefined || endedAt === undefined) {
-      return res.status(400).json({ error: 'Fecha inválida' });
+      return res.status(400).json({ error: 'Invalid date' });
     }
     const entry = await db.addEntry({
       kind: b.kind,
@@ -158,18 +158,18 @@ app.patch(
     const f = {};
     if (b.at !== undefined) {
       const at = isoOrNull(b.at);
-      if (!at) return res.status(400).json({ error: 'Fecha inválida' });
+      if (!at) return res.status(400).json({ error: 'Invalid date' });
       f.at = at;
     }
     if (b.endedAt !== undefined) {
       const endedAt = isoOrNull(b.endedAt);
-      if (endedAt === undefined) return res.status(400).json({ error: 'Fecha inválida' });
+      if (endedAt === undefined) return res.status(400).json({ error: 'Invalid date' });
       f.ended_at = endedAt;
     }
     if (b.data !== undefined) f.data = cleanData(b.data);
     if (b.notes !== undefined) f.notes = str(b.notes, 4000) || null;
     const e = await db.updateEntry(Number(req.params.id), f);
-    if (!e) return res.status(404).json({ error: 'No encontrado' });
+    if (!e) return res.status(404).json({ error: 'Not found' });
     res.json(e);
   })
 );
@@ -178,7 +178,7 @@ app.delete(
   '/api/entries/:id',
   wrap(async (req, res) => {
     const ok = await db.deleteEntry(Number(req.params.id));
-    if (!ok) return res.status(404).json({ error: 'No encontrado' });
+    if (!ok) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   })
 );
@@ -192,18 +192,18 @@ app.post(
     const b = req.body || {};
     const mime = IMAGE_MIMES.includes(b.mime) ? b.mime : null;
     if (!mime || typeof b.data !== 'string') {
-      return res.status(400).json({ error: 'Imagen inválida' });
+      return res.status(400).json({ error: 'Invalid image' });
     }
     const data = Buffer.from(b.data, 'base64');
     const thumb = typeof b.thumb === 'string' ? Buffer.from(b.thumb, 'base64') : null;
-    if (!data.length) return res.status(400).json({ error: 'Imagen vacía' });
+    if (!data.length) return res.status(400).json({ error: 'Empty image' });
     const photo = await db.addPhoto(Number(req.params.id), {
       mime,
       data,
       thumb,
       addedBy: str(b.addedBy, 40) || null,
     });
-    if (!photo) return res.status(404).json({ error: 'Registro no encontrado' });
+    if (!photo) return res.status(404).json({ error: 'Entry not found' });
     res.status(201).json(photo);
   })
 );
@@ -224,7 +224,7 @@ app.delete(
   '/api/photos/:id',
   wrap(async (req, res) => {
     const ok = await db.deletePhoto(Number(req.params.id));
-    if (!ok) return res.status(404).json({ error: 'No encontrado' });
+    if (!ok) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   })
 );
@@ -234,12 +234,12 @@ app.post(
   '/api/entries/:id/comments',
   wrap(async (req, res) => {
     const text = str(req.body?.text, 2000);
-    if (!text) return res.status(400).json({ error: 'El comentario está vacío' });
+    if (!text) return res.status(400).json({ error: 'The comment is empty' });
     const c = await db.addComment(Number(req.params.id), {
       author: str(req.body?.author, 40) || null,
       text,
     });
-    if (!c) return res.status(404).json({ error: 'Registro no encontrado' });
+    if (!c) return res.status(404).json({ error: 'Entry not found' });
     res.status(201).json(c);
   })
 );
@@ -248,7 +248,7 @@ app.delete(
   '/api/comments/:id',
   wrap(async (req, res) => {
     const ok = await db.deleteComment(Number(req.params.id));
-    if (!ok) return res.status(404).json({ error: 'No encontrado' });
+    if (!ok) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   })
 );
@@ -258,7 +258,7 @@ function parseExpense(b, partial) {
   const f = {};
   if (!partial || b.amount !== undefined) {
     const amount = Math.round(Number(b.amount) * 100) / 100;
-    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e9) return { error: 'Monto inválido' };
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e9) return { error: 'Invalid amount' };
     f.amount = amount;
   }
   if (!partial || b.category !== undefined) {
@@ -266,7 +266,7 @@ function parseExpense(b, partial) {
   }
   if (b.description !== undefined) f.description = str(b.description, 200) || null;
   if (b.spentOn !== undefined && b.spentOn !== '') {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.spentOn)) return { error: 'Fecha inválida' };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(b.spentOn)) return { error: 'Invalid date' };
     f.spent_on = b.spentOn;
   }
   if (b.paidBy !== undefined) f.paid_by = str(b.paidBy, 40) || null;
@@ -298,7 +298,7 @@ app.patch(
     const { f, error } = parseExpense(req.body || {}, true);
     if (error) return res.status(400).json({ error });
     const x = await db.updateExpense(Number(req.params.id), f);
-    if (!x) return res.status(404).json({ error: 'No encontrado' });
+    if (!x) return res.status(404).json({ error: 'Not found' });
     res.json(x);
   })
 );
@@ -307,7 +307,7 @@ app.delete(
   '/api/expenses/:id',
   wrap(async (req, res) => {
     const ok = await db.deleteExpense(Number(req.params.id));
-    if (!ok) return res.status(404).json({ error: 'No encontrado' });
+    if (!ok) return res.status(404).json({ error: 'Not found' });
     res.json({ ok: true });
   })
 );
@@ -318,12 +318,12 @@ app.get(
   wrap(async (req, res) => {
     const data = await db.exportAll();
     const day = new Date().toISOString().slice(0, 10);
-    res.setHeader('Content-Disposition', `attachment; filename="ma8ko-respaldo-${day}.json"`);
+    res.setHeader('Content-Disposition', `attachment; filename="ma8ko-backup-${day}.json"`);
     res.json({ app: 'ma8ko', exportedAt: new Date().toISOString(), ...data });
   })
 );
 
-app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
+app.use('/api', (req, res) => res.status(404).json({ error: 'Route not found' }));
 
 // --- Archivos estáticos (la app web) ---
 app.use(express.static(path.join(__dirname, 'public')));
@@ -331,17 +331,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 // --- Errores ---
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'La foto es demasiado grande' });
+    return res.status(413).json({ error: 'The photo is too large' });
   }
   console.error('[Ma8ko] Error:', err);
-  res.status(500).json({ error: 'Error interno del servidor' });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 db.init()
   .then(() => {
-    app.listen(PORT, () => console.log(`[Ma8ko] Escuchando en el puerto ${PORT}`));
+    app.listen(PORT, () => console.log(`[Ma8ko] Listening on port ${PORT}`));
   })
   .catch((err) => {
-    console.error('[Ma8ko] No se pudo inicializar la base de datos:', err);
+    console.error('[Ma8ko] Could not initialize the database:', err);
     process.exit(1);
   });

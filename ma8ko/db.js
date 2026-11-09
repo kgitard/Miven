@@ -46,8 +46,8 @@ export function isUsingPostgres() {
 export async function init() {
   if (!usingPostgres) {
     console.warn(
-      '[Ma8ko] Sin DATABASE_URL: usando almacén EN MEMORIA (los datos se ' +
-        'pierden al reiniciar). Agrega PostgreSQL en Railway para persistir.'
+      '[Ma8ko] No DATABASE_URL: using IN-MEMORY storage (data is lost ' +
+        'on restart). Add PostgreSQL in Railway to keep data.'
     );
     return;
   }

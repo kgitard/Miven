@@ -1,14 +1,14 @@
 {
   "name": "Ma8ko",
   "short_name": "Ma8ko",
-  "description": "Tomas, pañales, sueño, fotos para el pediatra y gastos del bebé",
+  "description": "Feedings, diapers, sleep, photos for the pediatrician and baby expenses",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#6d5bd0",
   "theme_color": "#6d5bd0",
   "orientation": "portrait",
-  "lang": "es",
+  "lang": "en",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

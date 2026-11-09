@@ -1,44 +1,49 @@
-# Ma8ko — guía para Claude
+# Ma8ko — guide for Claude
 
-Ma8ko es la bitácora del bebé de Kevin y Micaela (tomas, pañales, sueño,
-fotos para el pediatra, comentarios y gastos). **No tiene relación con Miven**
-(la lista de compras en la raíz del repo): solo comparten repositorio.
-Se despliega en Railway como servicio propio con Root Directory = `ma8ko`.
+Ma8ko is the baby log of Kevin and Micaela (feedings, diapers, sleep, photos
+for the pediatrician, comments and expenses). **It is unrelated to Miven**
+(the shopping list at the repo root): they only share the repository.
+It's deployed on Railway as its own service with Root Directory = `ma8ko`.
 
-## Regla nº 1: NUNCA perder los datos existentes
+## Rule #1: NEVER lose existing data
 
-La familia ya tiene datos reales en PostgreSQL. Cualquier cambio debe
-conservarlos:
+The family has real data in PostgreSQL. Every change must preserve it:
 
-- Solo cambios **aditivos** en el esquema: `CREATE TABLE IF NOT EXISTS`,
-  `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` (con DEFAULT o nullable),
-  `CREATE INDEX IF NOT EXISTS`. Van en `init()` de `db.js`.
-- **Prohibido** en `init()` o en cualquier código: `DROP TABLE`, `DROP COLUMN`,
-  `TRUNCATE`, `DELETE` masivo, renombrar tablas/columnas, cambiar tipos.
-  Si hace falta renombrar algo, se agrega lo nuevo y se copia; lo viejo se queda.
-- Los campos de cada registro van en `entries.data` (JSONB): para nuevos
-  campos de un registro, agrégalos ahí en vez de crear columnas. El código
-  debe tolerar registros viejos que no tengan el campo nuevo.
-- No cambies el significado de valores ya guardados (p. ej. `kind`, claves
-  de `data`, categorías de gasto, unidades: todo se guarda en métrico).
-- No cambies las claves de `localStorage` (`ma8ko_me`, `ma8ko_view`).
-- Prueba contra un PostgreSQL con datos existentes antes de commitear.
+- Only **additive** schema changes: `CREATE TABLE IF NOT EXISTS`,
+  `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` (with a DEFAULT or nullable),
+  `CREATE INDEX IF NOT EXISTS`. They go in `init()` in `db.js`.
+- **Forbidden** in `init()` or anywhere else: `DROP TABLE`, `DROP COLUMN`,
+  `TRUNCATE`, mass `DELETE`, renaming tables/columns, changing types.
+  If something must be renamed, add the new one and copy; leave the old one.
+- Per-entry fields live in `entries.data` (JSONB): add new fields there
+  instead of creating columns. Code must tolerate old entries that lack them.
+- Don't change the meaning of stored values. **The stored keys are Spanish
+  and must stay that way** even though the UI is English: `kind` values,
+  `data` keys/values (`method: pecho|biberon|solidos`, `side: izq|der|ambos`,
+  `type: pipi|popo|ambos|seco`, poop colors `amarillo|verde|…`, note topics,
+  temperature methods) and expense categories (`panales`, `leche`, …).
+  Only change the English *labels* in the catalogs at the top of `app.js`.
+- Everything is stored in metric; units are converted only for display.
+- Don't change the `localStorage` keys (`ma8ko_me`, `ma8ko_view`).
+- Test against a PostgreSQL that already has data before committing.
 
-## Mapa
+## Map
 
 ```
-server.js          Express: API REST (sin contraseña), /health, /api/backup
-db.js              PostgreSQL (DATABASE_URL) o memoria para dev
-public/index.html  Estructura (bienvenida + app con 4 pestañas)
-public/app.js      Cliente: vistas Hoy/Historial/Pediatra/Gastos, formularios,
-                   fotos (se comprimen en el navegador), polling a /api/version
-public/styles.css  Estilos (modo oscuro automático, impresión del reporte)
-public/icon.svg    Icono (tortuguita azul); los PNG se generan a partir de él
+server.js          Express: REST API (no password), /health, /api/backup
+db.js              PostgreSQL (DATABASE_URL) or in-memory for dev
+public/index.html  Structure (welcome screen + app with 4 tabs)
+public/app.js      Client: Today/History/Pediatrician/Expenses views, forms,
+                   photos (compressed in the browser), polling /api/version
+public/styles.css  Styles (automatic dark mode, report print styles)
+public/icon.svg    Icon (little blue turtle); the PNGs are rendered from it
 ```
 
-## Convenciones
+## Conventions
 
-- Código y UI en **español**. Sin frameworks en el frontend.
-- Tipos de registro (`entries.kind`): feeding, diaper, sleep, growth, med,
-  temp, note. Cualquier registro puede tener `data.ask` (preguntar al
-  pediatra) y `data.resolved`.
+- The **UI is in English**. Internal identifiers and code comments may be in
+  Spanish (legacy); don't rename identifiers that are stored as data.
+- No frontend frameworks: hand-written HTML/CSS/JS.
+- Entry kinds (`entries.kind`): feeding, diaper, sleep, growth, med, temp,
+  note. Any entry can have `data.ask` (ask the pediatrician) and
+  `data.resolved`.
