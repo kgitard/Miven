@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Bitácora del bebé</title>
+    <meta name="theme-color" content="#6d5bd0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Bebé" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <!-- Pantalla de contraseña (solo si el servidor tiene APP_PASSWORD) -->
+    <section id="login" class="screen-center hidden">
+      <form id="login-form" class="card narrow">
+        <div class="big-emoji">👶</div>
+        <h1>Bitácora del bebé</h1>
+        <p class="muted">Escribe la contraseña de la familia.</p>
+        <input id="login-password" type="password" autocomplete="current-password" placeholder="Contraseña" required />
+        <p id="login-error" class="error hidden"></p>
+        <button class="btn primary block" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Bienvenida: tu nombre (y el del bebé la primera vez) -->
+    <section id="welcome" class="screen-center hidden">
+      <form id="welcome-form" class="card narrow">
+        <div class="big-emoji">🍼</div>
+        <h1>¡Bienvenidos!</h1>
+        <label class="field">
+          <span>¿Cómo te llamas?</span>
+          <input id="welcome-me" maxlength="40" placeholder="Ej. Kevin" required />
+        </label>
+        <div id="welcome-baby">
+          <label class="field">
+            <span>Nombre del bebé</span>
+            <input id="welcome-baby-name" maxlength="60" placeholder="Ej. Mateo" />
+          </label>
+          <label class="field">
+            <span>Fecha de nacimiento</span>
+            <input id="welcome-baby-birth" type="date" />
+          </label>
+        </div>
+        <button class="btn primary block" type="submit">Empezar</button>
+      </form>
+    </section>
+
+    <!-- App -->
+    <div id="app" class="app hidden">
+      <header class="topbar">
+        <div class="baby">
+          <div class="baby-name" id="baby-name">Bebé</div>
+          <div class="baby-age" id="baby-age"></div>
+        </div>
+        <button class="icon-btn" id="btn-settings" aria-label="Ajustes">⚙️</button>
+      </header>
+
+      <div id="timers" class="timers"></div>
+
+      <main class="content" id="content">
+        <section id="view-hoy" class="view"></section>
+        <section id="view-historial" class="view hidden"></section>
+        <section id="view-pediatra" class="view hidden"></section>
+        <section id="view-gastos" class="view hidden"></section>
+        <section id="view-reporte" class="view hidden"></section>
+      </main>
+
+      <nav class="tabbar">
+        <button data-view="hoy" class="active"><span>🏠</span>Hoy</button>
+        <button data-view="historial"><span>📅</span>Historial</button>
+        <button data-view="pediatra"><span>🩺</span>Pediatra</button>
+        <button data-view="gastos"><span>💰</span>Gastos</button>
+      </nav>
+    </div>
+
+    <!-- Hoja inferior genérica (formularios y detalles) -->
+    <div id="sheet-backdrop" class="sheet-backdrop hidden"></div>
+    <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div id="sheet-body"></div>
+    </div>
+
+    <!-- Visor de fotos a pantalla completa -->
+    <div id="viewer" class="viewer hidden">
+      <img id="viewer-img" alt="Foto" />
+      <div class="viewer-bar">
+        <button class="btn ghost light" id="viewer-prev">‹</button>
+        <a class="btn ghost light" id="viewer-download" download>Descargar</a>
+        <button class="btn ghost light" id="viewer-close">Cerrar</button>
+        <button class="btn ghost light" id="viewer-next">›</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <input id="file-input" type="file" accept="image/*" multiple hidden />
+
+    <script src="/app.js"></script>
+  </body>
+</html>

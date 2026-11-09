@@ -14,6 +14,10 @@ public/styles.css    Estilos (teal, responsivo, modo oscuro automático)
 public/app.js        Lógica del cliente: fetch a la API, render, polling
 railway.json         Config de despliegue en Railway (start + healthcheck)
 .env.example         Variables de entorno de ejemplo
+bebe/                App APARTE: bitácora del bebé (tomas, pañales, fotos
+                     para el pediatra, gastos). Tiene su propio package.json,
+                     railway.json y README; se despliega como otro servicio
+                     de Railway con Root Directory = bebe.
 ```
 
 ## Cómo funciona
