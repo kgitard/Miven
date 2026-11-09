@@ -1,4 +1,4 @@
-// Bitácora del bebé — lógica del cliente (sin frameworks).
+// Ma8ko (bitácora del bebé) — lógica del cliente (sin frameworks).
 //
 // Vistas: Hoy · Historial · Pediatra (+ reporte imprimible) · Gastos.
 // Todo se guarda en el servidor; el cliente consulta /api/version cada
@@ -86,10 +86,10 @@ const r2 = (n) => Math.round(n * 100) / 100;
 
 const S = {
   ready: false,
-  session: {},
+  info: {},
   settings: {},
-  me: store.get('bebe_me') || '',
-  view: store.get('bebe_view') || 'hoy',
+  me: store.get('ma8ko_me') || '',
+  view: store.get('ma8ko_view') || 'hoy',
   version: null,
   running: [],
   recent: [],
@@ -207,10 +207,6 @@ async function api(method, url, body) {
     opt.body = JSON.stringify(body);
   }
   const res = await fetch(url, opt);
-  if (res.status === 401 && url !== '/api/login') {
-    showScreen('login');
-    throw new Error('Inicia sesión de nuevo');
-  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Algo salió mal');
   return data;
@@ -362,13 +358,12 @@ const emptyState = (icon, text) => `<div class="empty"><div>${icon}</div><p>${te
 // ======================= Pantallas =======================
 
 function showScreen(name) {
-  for (const id of ['login', 'welcome', 'app']) $('#' + id).classList.toggle('hidden', id !== name);
-  if (name === 'login') setTimeout(() => $('#login-password').focus(), 50);
+  for (const id of ['welcome', 'app']) $('#' + id).classList.toggle('hidden', id !== name);
 }
 
 function setView(view) {
   S.view = view;
-  if (view !== 'reporte') store.set('bebe_view', view);
+  if (view !== 'reporte') store.set('ma8ko_view', view);
   for (const v of ['hoy', 'historial', 'pediatra', 'gastos', 'reporte']) {
     $('#view-' + v).classList.toggle('hidden', v !== view);
   }
@@ -380,10 +375,10 @@ function setView(view) {
 }
 
 function renderHeader() {
-  const name = S.settings.babyName || 'Bebé';
+  const name = S.settings.babyName || 'Ma8ko';
   $('#baby-name').textContent = name;
   $('#baby-age').textContent = babyAge(S.settings.birthDate).text;
-  document.title = `${name} · Bitácora`;
+  document.title = S.settings.babyName ? `${name} · Ma8ko` : 'Ma8ko';
 }
 
 // ---------- Cronómetros activos ----------
@@ -474,6 +469,7 @@ function renderHoy() {
   if (feeds24.length >= 3) avgGap = (feeds24[feeds24.length - 1] - feeds24[0]) / (feeds24.length - 1);
 
   $('#view-hoy').innerHTML = `
+    ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ El servidor no tiene base de datos (PostgreSQL): lo que registren se borrará al reiniciar. Agreguen PostgreSQL en Railway.</div>' : ''}
     ${age.milestone && S.settings.babyName ? `<div class="banner party">🎉 ¡Hoy ${esc(S.settings.babyName)} cumple ${esc(age.text)}!</div>` : ''}
 
     <div class="hero">
@@ -845,7 +841,7 @@ function exportExpenses() {
   const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
-  a.download = `gastos-bebe-${ymd(new Date())}.csv`;
+  a.download = `gastos-ma8ko-${ymd(new Date())}.csv`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -1251,7 +1247,7 @@ function showViewerPhoto() {
   const src = `/api/photos/${ids[idx]}`;
   $('#viewer-img').src = src;
   $('#viewer-download').href = src;
-  $('#viewer-download').setAttribute('download', `bebe-foto-${ids[idx]}.jpg`);
+  $('#viewer-download').setAttribute('download', `ma8ko-foto-${ids[idx]}.jpg`);
   $('#viewer-prev').classList.toggle('invisible', idx === 0);
   $('#viewer-next').classList.toggle('invisible', idx >= ids.length - 1);
 }
@@ -1451,10 +1447,10 @@ function openSettings() {
       <button class="btn primary block" type="submit">Guardar</button>
     </form>
     <div class="settings-info">
-      ${S.session.storage === 'memory' ? '<div class="banner warn">⚠️ El servidor no tiene base de datos (PostgreSQL): los datos se borran al reiniciar.</div>' : ''}
+      ${S.info.storage === 'memory' ? '<div class="banner warn">⚠️ El servidor no tiene base de datos (PostgreSQL): los datos se borran al reiniciar.</div>' : ''}
       <p class="muted small">📱 Tip: ábrela en Safari/Chrome y elige “Agregar a pantalla de inicio” para usarla como app.</p>
-      <p class="muted small">Comparte el link con tu pareja${S.session.authRequired ? ' y la contraseña de la familia' : ''}: ambos ven y editan lo mismo.</p>
-      ${S.session.authRequired ? '<button class="btn ghost block" data-act="logout">Cerrar sesión en este celular</button>' : ''}
+      <p class="muted small">Comparte el link con tu pareja: ambos ven y editan lo mismo.</p>
+      <a class="btn ghost block" href="/api/backup" download>💾 Descargar respaldo de los datos</a>
     </div>`
   );
   S.pendingUnits = s.units === 'us' ? 'us' : 'metric';
@@ -1464,7 +1460,7 @@ async function saveSettingsForm() {
   const me = $('#set-me').value.trim();
   if (!me) return toast('Escribe tu nombre', true);
   S.me = me;
-  store.set('bebe_me', me);
+  store.set('ma8ko_me', me);
   try {
     S.settings = await api('PUT', '/api/settings', {
       babyName: $('#set-baby').value,
@@ -1614,10 +1610,6 @@ const ACTIONS = {
     S.pendingUnits = el.dataset.val;
     $$('[data-act="set-units"]').forEach((b) => b.classList.toggle('active', b === el));
   },
-  logout: async () => {
-    await api('POST', '/api/logout').catch(() => {});
-    location.reload();
-  },
 };
 
 document.addEventListener('click', (ev) => {
@@ -1694,21 +1686,7 @@ document.addEventListener('keydown', (ev) => {
   }
 });
 
-// ---------- Login y bienvenida ----------
-
-$('#login-form').addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  ev.stopPropagation();
-  const err = $('#login-error');
-  err.classList.add('hidden');
-  try {
-    await api('POST', '/api/login', { password: $('#login-password').value });
-    start();
-  } catch (e) {
-    err.textContent = e.message;
-    err.classList.remove('hidden');
-  }
-});
+// ---------- Bienvenida ----------
 
 $('#welcome-form').addEventListener('submit', async (ev) => {
   ev.preventDefault();
@@ -1716,7 +1694,7 @@ $('#welcome-form').addEventListener('submit', async (ev) => {
   const me = $('#welcome-me').value.trim();
   if (!me) return;
   S.me = me;
-  store.set('bebe_me', me);
+  store.set('ma8ko_me', me);
   const babyName = $('#welcome-baby-name').value.trim();
   const birthDate = $('#welcome-baby-birth').value;
   try {
@@ -1741,8 +1719,7 @@ function enterApp() {
 
 async function start() {
   try {
-    S.session = await api('GET', '/api/session');
-    if (!S.session.authed) return showScreen('login');
+    S.info = await api('GET', '/api/info');
     S.settings = await api('GET', '/api/settings');
     if (!S.me) {
       $('#welcome-baby').classList.toggle('hidden', Boolean(S.settings.babyName));
@@ -1752,7 +1729,7 @@ async function start() {
     }
     enterApp();
   } catch (err) {
-    if (S.session.authed !== false) fail(err);
+    fail(err);
   }
 }
 

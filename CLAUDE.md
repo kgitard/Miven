@@ -14,10 +14,9 @@ public/styles.css    Estilos (teal, responsivo, modo oscuro automático)
 public/app.js        Lógica del cliente: fetch a la API, render, polling
 railway.json         Config de despliegue en Railway (start + healthcheck)
 .env.example         Variables de entorno de ejemplo
-bebe/                App APARTE: bitácora del bebé (tomas, pañales, fotos
-                     para el pediatra, gastos). Tiene su propio package.json,
-                     railway.json y README; se despliega como otro servicio
-                     de Railway con Root Directory = bebe.
+ma8ko/               OTRO proyecto sin relación con Miven (bitácora del bebé).
+                     Solo comparte el repo; tiene su propio CLAUDE.md,
+                     package.json y servicio de Railway. No lo mezcles.
 ```
 
 ## Cómo funciona

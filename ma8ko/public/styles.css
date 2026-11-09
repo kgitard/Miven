@@ -284,6 +284,18 @@ h3 {
 .narrow .field {
   text-align: left;
 }
+.welcome-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  align-self: center;
+}
+.topbar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  margin-right: 10px;
+}
 .big-emoji {
   font-size: 48px;
 }
@@ -305,6 +317,10 @@ h3 {
   padding: calc(10px + var(--safe-top)) 16px 10px;
   background: var(--primary);
   color: #fff;
+}
+.baby {
+  flex: 1;
+  min-width: 0;
 }
 .baby-name {
   font-size: 20px;

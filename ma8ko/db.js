@@ -1,4 +1,4 @@
-// Capa de acceso a datos de la bitácora del bebé.
+// Capa de acceso a datos de Ma8ko (bitácora del bebé).
 //
 // Usa PostgreSQL cuando existe DATABASE_URL (lo normal en Railway).
 // Si no hay DATABASE_URL, cae a un almacén en memoria para poder probar
@@ -46,7 +46,7 @@ export function isUsingPostgres() {
 export async function init() {
   if (!usingPostgres) {
     console.warn(
-      '[Bebé] Sin DATABASE_URL: usando almacén EN MEMORIA (los datos se ' +
+      '[Ma8ko] Sin DATABASE_URL: usando almacén EN MEMORIA (los datos se ' +
         'pierden al reiniciar). Agrega PostgreSQL en Railway para persistir.'
     );
     return;
@@ -422,4 +422,27 @@ export async function deleteExpense(id) {
   }
   const { rowCount } = await pool.query('DELETE FROM expenses WHERE id = $1', [id]);
   return rowCount > 0;
+}
+
+// ---------------- Respaldo ----------------
+// Todo menos los bytes de las fotos (esas siguen en PostgreSQL).
+
+export async function exportAll() {
+  if (!usingPostgres) {
+    return {
+      settings: { ...mem.settings },
+      entries: mem.entries,
+      comments: mem.comments,
+      photos: mem.photos.map(({ id, entry_id, mime, added_by, created_at }) => ({ id, entry_id, mime, added_by, created_at })),
+      expenses: mem.expenses,
+    };
+  }
+  const q = async (sql) => (await pool.query(sql)).rows;
+  return {
+    settings: await getSettings(),
+    entries: await q('SELECT * FROM entries ORDER BY id'),
+    comments: await q('SELECT * FROM comments ORDER BY id'),
+    photos: await q('SELECT id, entry_id, mime, added_by, created_at FROM photos ORDER BY id'),
+    expenses: (await q('SELECT * FROM expenses ORDER BY id')).map(fixExpense),
+  };
 }

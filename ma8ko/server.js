@@ -1,8 +1,5 @@
-// Servidor de la bitácora del bebé: sirve la app web y expone la API.
-//
-// Acceso: si existe APP_PASSWORD, se pide una contraseña compartida una vez
-// por dispositivo (cookie firmada con HMAC que dura 1 año). Las fotos del
-// bebé son privadas, por eso es muy recomendable ponerla.
+// Servidor de Ma8ko (bitácora del bebé): sirve la app web y expone la API.
+// Sin contraseña: cualquiera con el link entra directo.
 
 import express from 'express';
 import crypto from 'node:crypto';
@@ -13,13 +10,6 @@ import * as db from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-
-const APP_PASSWORD = process.env.APP_PASSWORD || '';
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  crypto.createHash('sha256').update('bebe:' + APP_PASSWORD).digest('hex');
-const COOKIE = 'bebe_session';
-const ONE_YEAR = 365 * 24 * 60 * 60;
 
 // Tipos de registro válidos y categorías de gasto.
 const KINDS = ['feeding', 'diaper', 'sleep', 'growth', 'med', 'temp', 'note'];
@@ -67,38 +57,12 @@ function cleanData(input) {
   return out;
 }
 
-function sign(value) {
-  return crypto.createHmac('sha256', SESSION_SECRET).update(value).digest('base64url');
-}
-
-function readCookie(req, name) {
-  const header = req.headers.cookie || '';
-  for (const part of header.split(';')) {
-    const [k, ...rest] = part.trim().split('=');
-    if (k === name) return decodeURIComponent(rest.join('='));
-  }
-  return null;
-}
-
-function isAuthed(req) {
-  if (!APP_PASSWORD) return true;
-  const raw = readCookie(req, COOKIE);
-  if (!raw) return false;
-  const [payload, mac] = raw.split('.');
-  if (!payload || !mac) return false;
-  const expected = sign(payload);
-  const a = Buffer.from(mac);
-  const b = Buffer.from(expected);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // ---------------- App ----------------
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', 1); // Railway está detrás de un proxy (para req.secure)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', storage: db.isUsingPostgres() ? 'postgres' : 'memory' });
@@ -108,42 +72,9 @@ app.get('/health', (req, res) => {
 app.use('/api/entries/:id/photos', express.json({ limit: '20mb' }));
 app.use(express.json({ limit: '200kb' }));
 
-// --- Sesión ---
-app.get('/api/session', (req, res) => {
-  res.json({
-    authRequired: Boolean(APP_PASSWORD),
-    authed: isAuthed(req),
-    storage: db.isUsingPostgres() ? 'postgres' : 'memory',
-  });
-});
-
-app.post('/api/login', async (req, res) => {
-  const given = String(req.body?.password || '');
-  const a = crypto.createHash('sha256').update(given).digest();
-  const b = crypto.createHash('sha256').update(APP_PASSWORD).digest();
-  if (!APP_PASSWORD || crypto.timingSafeEqual(a, b)) {
-    const payload = Date.now().toString(36);
-    res.setHeader(
-      'Set-Cookie',
-      `${COOKIE}=${payload}.${sign(payload)}; Max-Age=${ONE_YEAR}; Path=/; HttpOnly; SameSite=Lax` +
-        (req.secure ? '; Secure' : '')
-    );
-    return res.json({ ok: true });
-  }
-  // Pequeña pausa para frenar intentos a lo bruto.
-  await new Promise((r) => setTimeout(r, 800));
-  res.status(401).json({ error: 'Contraseña incorrecta' });
-});
-
-app.post('/api/logout', (req, res) => {
-  res.setHeader('Set-Cookie', `${COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`);
-  res.json({ ok: true });
-});
-
-// Todo lo demás de /api requiere sesión.
-app.use('/api', (req, res, next) => {
-  if (isAuthed(req)) return next();
-  res.status(401).json({ error: 'No autorizado' });
+// --- Info del servidor (la app avisa si no hay base de datos) ---
+app.get('/api/info', (req, res) => {
+  res.json({ storage: db.isUsingPostgres() ? 'postgres' : 'memory' });
 });
 
 // Todas las escrituras cambian la versión de datos.
@@ -381,6 +312,17 @@ app.delete(
   })
 );
 
+// --- Respaldo (descarga JSON con todos los datos, sin las fotos) ---
+app.get(
+  '/api/backup',
+  wrap(async (req, res) => {
+    const data = await db.exportAll();
+    const day = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Disposition', `attachment; filename="ma8ko-respaldo-${day}.json"`);
+    res.json({ app: 'ma8ko', exportedAt: new Date().toISOString(), ...data });
+  })
+);
+
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 
 // --- Archivos estáticos (la app web) ---
@@ -391,18 +333,15 @@ app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ error: 'La foto es demasiado grande' });
   }
-  console.error('[Bebé] Error:', err);
+  console.error('[Ma8ko] Error:', err);
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
 db.init()
   .then(() => {
-    if (!APP_PASSWORD) {
-      console.warn('[Bebé] Sin APP_PASSWORD: cualquiera con el link puede entrar.');
-    }
-    app.listen(PORT, () => console.log(`[Bebé] Escuchando en el puerto ${PORT}`));
+    app.listen(PORT, () => console.log(`[Ma8ko] Escuchando en el puerto ${PORT}`));
   })
   .catch((err) => {
-    console.error('[Bebé] No se pudo inicializar la base de datos:', err);
+    console.error('[Ma8ko] No se pudo inicializar la base de datos:', err);
     process.exit(1);
   });

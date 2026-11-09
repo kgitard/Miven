@@ -1,4 +1,6 @@
-# Bitácora del bebé 👶
+# Ma8ko 🐢
+
+Bitácora del bebé.
 
 App web (para el celular) para que **los dos papás** registren todo lo del bebé
 y lo vean al instante en ambos teléfonos.
@@ -27,27 +29,40 @@ y lo vean al instante en ambos teléfonos.
 
 ## Desplegar en Railway
 
-Esta app vive en la carpeta `bebe/` del repo y es **independiente de Miven**
-(su propio servicio y su propia base de datos).
+Ma8ko **no tiene nada que ver con Miven** (la lista de compras): solo comparte
+el repositorio. Vive en la carpeta `ma8ko/` y se despliega como su propio
+servicio con su propia base de datos.
 
 1. En tu proyecto de Railway: **New → GitHub Repo →** este repo.
-2. En el servicio nuevo: **Settings → Root Directory = `bebe`**.
+2. En el servicio nuevo: **Settings → Root Directory = `ma8ko`**.
 3. Agrega una base de datos: **New → Database → PostgreSQL**, y en las
    variables del servicio pon `DATABASE_URL = ${{Postgres.DATABASE_URL}}`.
-   (Usa un Postgres distinto al de Miven, o el mismo: las tablas no chocan.)
-4. Variables del servicio:
-   - `APP_PASSWORD` — **la contraseña de la familia** (muy recomendable: hay
-     fotos del bebé). Se pide una sola vez por celular.
-5. **Settings → Networking → Generate Domain** y comparte el link + la
-   contraseña con tu pareja.
+   Usa un PostgreSQL **propio para Ma8ko** (no el de Miven).
+4. **Settings → Networking → Generate Domain** y comparte el link con tu
+   pareja. No hay contraseña: cualquiera con el link entra.
 
 Las fotos se guardan en PostgreSQL (≈150–300 KB cada una después de
 comprimir), así que no hace falta configurar almacenamiento aparte.
 
+## Tus datos están a salvo al modificar la app
+
+- Todo se guarda en PostgreSQL, que es un servicio aparte en Railway. Volver a
+  desplegar o cambiar el código **no toca la base de datos**.
+- Al arrancar, el servidor solo hace `CREATE TABLE IF NOT EXISTS`: nunca borra
+  ni recrea tablas. Los cambios futuros deben ser solo aditivos (ver
+  `CLAUDE.md` en esta carpeta).
+- Lo único que borra los datos es **eliminar el servicio de PostgreSQL** en
+  Railway. No lo hagan.
+- Extra: en **Ajustes → Descargar respaldo** bajan un archivo JSON con todo
+  (registros, comentarios, gastos). Railway también ofrece respaldos
+  automáticos del PostgreSQL en la pestaña *Backups* del servicio.
+- Si la app no tiene base de datos conectada, muestra un aviso amarillo en la
+  pantalla de inicio (en ese modo los datos se perderían al reiniciar).
+
 ## Desarrollo local
 
 ```bash
-cd bebe
+cd ma8ko
 npm install
 npm start          # http://localhost:3000 (sin DATABASE_URL usa memoria)
 ```
@@ -56,8 +71,8 @@ npm start          # http://localhost:3000 (sin DATABASE_URL usa memoria)
 
 | Método | Ruta                          | Descripción                                   |
 | ------ | ----------------------------- | --------------------------------------------- |
-| GET    | `/api/session`                | ¿pide contraseña? ¿ya entraste?               |
-| POST   | `/api/login` / `/api/logout`  | `{ password }`                                |
+| GET    | `/api/info`                   | `{ storage: 'postgres' | 'memory' }`         |
+| GET    | `/api/backup`                 | respaldo JSON de todo (sin fotos)             |
 | GET    | `/api/version`                | cambia con cada escritura (sincronización)    |
 | GET/PUT| `/api/settings`               | `{ babyName, birthDate, currency, units }`    |
 | GET    | `/api/entries`                | `?from&to&kind&ask=1&running=1&limit`         |

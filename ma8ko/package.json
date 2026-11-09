@@ -1,7 +1,7 @@
 {
-  "name": "bebe",
+  "name": "ma8ko",
   "version": "1.0.0",
-  "description": "Bitácora del bebé: tomas, pañales, sueño, fotos para el pediatra y gastos",
+  "description": "Ma8ko — bitácora del bebé: tomas, pañales, sueño, fotos para el pediatra y gastos",
   "type": "module",
   "main": "server.js",
   "scripts": {
